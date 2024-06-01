@@ -1,0 +1,45 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/cpp
+{
+	"name": "cpp-python:ubuntu-22.04",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	"features": 
+	{
+		"ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
+			"packages": "libgl1-mesa-glx, nano"
+		},
+		"ghcr.io/devcontainers/features/python:1": 
+		{
+			"version": 3.9
+		}
+	},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "pip install coverage && pip install pytest",
+
+	// Configure tool-specific properties.
+	"customizations": 
+	{
+		"vscode":
+		{
+			"extensions": 
+			[
+			    "mhutchie.git-graph"
+			  , "eamodio.gitlens"
+			  , "gruntfuggly.todo-tree"
+			  , "charliermarsh.ruff"
+			  , "njpwerner.autodocstring"
+			]
+		}
+	}
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
+}

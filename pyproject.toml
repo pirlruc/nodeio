@@ -1,0 +1,36 @@
+[build-system]
+requires      = ["setuptools>=61.0", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name     = "nodeio"
+authors  = [
+  { name = "Nuno Monteiro", email = "pirlruc@gmail.com" },
+]
+description = "Node engine"
+readme      = "README.md"
+requires-python = ">=3.9"
+keywords    = ["node engine", "factory pattern"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dynamic = ["version","dependencies"]
+
+[project.urls]
+"Homepage"    = "https://github.com/pirlruc/nodeio"
+"Bug Tracker" = "https://github.com/pirlruc/nodeio/issues"
+
+[tool.setuptools.packages.find]
+where      = ["."]
+exclude    = ["tests","docs"]
+namespaces = false
+
+[tool.setuptools_scm]
+write_to = "nodeio/__init__.py"
+fallback_version = "0.0.0"
+
+[tool.setuptools.dynamic]
+version = {attr = "nodeio.__version__"}
+dependencies = {file = ["requirements.txt"]}
