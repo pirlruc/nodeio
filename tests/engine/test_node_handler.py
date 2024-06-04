@@ -168,7 +168,7 @@ class TestNodeHandler(unittest.TestCase):
             id="b", functor=CompleteNodeOptions().load(y=2, z=3).process)
         handler.load(stream_handler=stream_handler, configuration=Node(
             node="b", input_streams=[InputStream(arg="x", stream="1")], output_stream="2"))
-        context: dict[str, ContextStream] = dict()
+        context: dict[str, ContextStream] = {}
         context["1"] = ContextStream(key="1", type=int)
         context["1"].register(new_value=1)
         context = handler.process(context)

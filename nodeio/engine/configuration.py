@@ -29,7 +29,7 @@ class InputStream(BaseModel, validate_assignment=True):
                 Union[ListAction, DictAction], Field(discriminator="type")
             ]
         ]
-    ] = list()
+    ] = []
 
 
 class Node(BaseModel, validate_assignment=True):
@@ -38,9 +38,9 @@ class Node(BaseModel, validate_assignment=True):
 
     type: Literal["node"] = "node"
     node: key_str
-    input_streams: Optional[list[InputStream]] = list()
+    input_streams: Optional[list[InputStream]] = []
     output_stream: Optional[key_str] = None
-    options: Optional[dict] = dict()
+    options: Optional[dict] = {}
 
     @model_validator(mode="after")
     def __check_configuration(self) -> Self:

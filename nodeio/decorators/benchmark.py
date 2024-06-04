@@ -107,5 +107,4 @@ def benchmark(_functor: Callable = None, *, number_repeats: PositiveInt = 100):
 
     if _functor is None:
         return decorator_benchmark
-    else:
-        return decorator_benchmark(_functor)
+    return decorator_benchmark(_functor)

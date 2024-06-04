@@ -25,7 +25,7 @@ class InputStream(BaseModel, validate_assignment=True):
 
     arg: InputArg
     stream: OutputStream
-    actions: Optional[list[Action]] = list()
+    actions: Optional[list[Action]] = []
 
     @model_validator(mode="after")
     def __check_data_type_fields(self) -> Self:
@@ -70,7 +70,7 @@ class InputStream(BaseModel, validate_assignment=True):
         :return: InputStream instance
         :rtype: Self
         """
-        actions = list()
+        actions = []
         for action in configuration.actions:
             actions.append(Action.from_configuration(configuration=action))
         return InputStream(
@@ -112,7 +112,7 @@ class ContextStream(OutputStream):
 
     @validate_call
     @log
-    def get(self, actions: Optional[list[Action]] = list()) -> Any:
+    def get(self, actions: Optional[list[Action]] = []) -> Any:
         """Obtains the value registered in the output stream. The value
         returned is a copy of the original value.
 

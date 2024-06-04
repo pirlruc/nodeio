@@ -18,9 +18,9 @@ class NodeHandler(BaseModel, validate_assignment=True):
 
     id: key_str = Field(frozen=True)
     functor: Callable = Field(frozen=True)
-    __inputs: Optional[dict[key_str, InputArg]] = PrivateAttr(default=dict())
+    __inputs: Optional[dict[key_str, InputArg]] = PrivateAttr(default={})
     __output: Optional[OutputArg] = PrivateAttr(default=OutputArg())
-    __input_streams: Optional[list[InputStream]] = PrivateAttr(default=list())
+    __input_streams: Optional[list[InputStream]] = PrivateAttr(default=[])
     __output_stream: Optional[OutputStream] = PrivateAttr(default=None)
 
     @property
@@ -148,7 +148,7 @@ class NodeHandler(BaseModel, validate_assignment=True):
 
     @validate_call
     def process(
-        self, context: Optional[dict[key_str, ContextStream]] = dict()
+        self, context: Optional[dict[key_str, ContextStream]] = {}
     ) -> dict[key_str, ContextStream]:
         """Process node registered in handler synchronously.
 
@@ -158,7 +158,7 @@ class NodeHandler(BaseModel, validate_assignment=True):
         :return: Updated processing context
         :rtype: dict[key_str, ContextStream]
         """
-        input_context = dict()
+        input_context = {}
         for input in self.__input_streams:
             input_context[input.arg.key] = context[input.stream.key].get(
                 actions=input.actions
@@ -173,7 +173,7 @@ class NodeHandler(BaseModel, validate_assignment=True):
         return context
 
     async def process_async(
-        self, context: Optional[dict[key_str, ContextStream]] = dict()
+        self, context: Optional[dict[key_str, ContextStream]] = {}
     ) -> dict[key_str, ContextStream]:
         """Process node registered in handler asynchronously.
 

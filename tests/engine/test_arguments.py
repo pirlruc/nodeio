@@ -86,7 +86,7 @@ class TestArguments(unittest.TestCase):
 
     def test_input_not_annotated(self):
         sig = signature(input_not_annotated)
-        input = dict()
+        input = {}
         for key in sig.parameters.keys():
             input[key] = InputArg.from_parameter(sig.parameters[key])
         output = OutputArg.from_return_annotation(sig.return_annotation)
@@ -100,7 +100,7 @@ class TestArguments(unittest.TestCase):
 
     def test_input_annotated(self):
         sig = signature(input_annotated)
-        input = dict()
+        input = {}
         for key in sig.parameters.keys():
             input[key] = InputArg.from_parameter(sig.parameters[key])
         output = OutputArg.from_return_annotation(sig.return_annotation)
@@ -117,14 +117,14 @@ class TestArguments(unittest.TestCase):
 
     def test_input_annotated_invalid(self):
         sig = signature(input_annotated_invalid)
-        input = dict()
+        input = {}
         with self.assertRaises(TypeError):
             for key in sig.parameters.keys():
                 input[key] = InputArg.from_parameter(sig.parameters[key])
 
     def test_input_output_annotated(self):
         sig = signature(input_output_annotated)
-        input = dict()
+        input = {}
         for key in sig.parameters.keys():
             input[key] = InputArg.from_parameter(sig.parameters[key])
         output = OutputArg.from_return_annotation(sig.return_annotation)

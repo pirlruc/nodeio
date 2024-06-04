@@ -12,7 +12,7 @@ from nodeio.infrastructure.logger import NodeIOLogger
 class Factory(BaseModel, validate_assignment=True):
     """Factory pattern implementation for a class."""
 
-    __callbacks: dict[Callable] = PrivateAttr(default=dict())
+    __callbacks: dict[Callable] = PrivateAttr(default={})
 
     @property
     def number_callbacks(self) -> int:

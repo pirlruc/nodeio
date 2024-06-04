@@ -19,7 +19,7 @@ class StreamHandler(
         connected: bool = False
 
     graph: DiGraph = Field(frozen=True)
-    __output: dict[key_str, __Connection] = PrivateAttr(default=dict())
+    __output: dict[key_str, __Connection] = PrivateAttr(default={})
 
     @property
     def number_output_streams(self) -> int:

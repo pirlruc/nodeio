@@ -34,7 +34,7 @@ class TestSingleton(unittest.TestCase):
         self.assertNotEqual(id(TestOne()), id(TestTwo()))
 
     def test_singleton_thread(self):
-        results = dict()
+        results = {}
         process1 = Thread(target=print_value_thread, args=("FOO", results))
         process2 = Thread(target=print_value_thread, args=("BAR", results))
         process1.start()

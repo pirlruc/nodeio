@@ -32,16 +32,16 @@ class NodeType(str, Enum):
 
 class GraphHandler(BaseModel, validate_assignment=True):
     __graph: DiGraph = PrivateAttr(default=DiGraph())
-    __input_streams: list[OutputStream] = PrivateAttr(default=list())
-    __output_streams: list[OutputStream] = PrivateAttr(default=list())
+    __input_streams: list[OutputStream] = PrivateAttr(default=[])
+    __output_streams: list[OutputStream] = PrivateAttr(default=[])
     __main_processing_graph: dict[int, list[NodeHandler]] = PrivateAttr(
-        default=dict()
+        default={}
     )
     __source_processing_graph: dict[int, list[NodeHandler]] = PrivateAttr(
-        default=dict()
+        default={}
     )
     __source_context: dict[key_str, ContextStream] = PrivateAttr(
-        default=dict()
+        default={}
     )
 
     @property
@@ -132,7 +132,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
         """Execute nodes independent from the main processing graph.
         The context will be stored and used by the main processing graph.
         """
-        context = dict()
+        context = {}
         for level, node_handlers in self.__source_processing_graph.items():
             NodeIOLogger().logger.info(
                 f"Processing {len(node_handlers)} not main nodes in level "
@@ -148,7 +148,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
     @validate_call
     @log
     def process(
-        self, context: Optional[dict[key_str, ContextStream]] = dict()
+        self, context: Optional[dict[key_str, ContextStream]] = {}
     ) -> dict[key_str, Any]:
         """Executed nodes from the main processing graph.
         The context returned correspond only to the main output streams
@@ -199,7 +199,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
     @validate_call
     @log
     async def process_async(
-        self, context: Optional[dict[key_str, ContextStream]] = dict()
+        self, context: Optional[dict[key_str, ContextStream]] = {}
     ) -> dict[key_str, Any]:
         """Executed nodes from the main processing graph.
         The context returned correspond only to the main output streams
@@ -258,7 +258,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
                         task.add_done_callback(task_done_callback)
 
             else:  # < 3.11:
-                async_tasks = list()
+                async_tasks = []
                 for node_handler in node_handlers:
                     NodeIOLogger().logger.info(
                         f"--> Processing node handler {node_handler.id}..."
@@ -427,7 +427,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
         # The nodes will insert input and output streams through the stream
         # handler
         for node_config in configuration:
-            input_context = dict()
+            input_context = {}
             for key, value in node_config.options.items():
                 input_context[key] = value
             node: BaseNode = factory.create(
@@ -557,12 +557,12 @@ class GraphHandler(BaseModel, validate_assignment=True):
         :return: Processing graph defined by levels.
         :rtype: dict[int, list[NodeHandler]]
         """
-        processing_graph = dict()
+        processing_graph = {}
         level = 0
         pending_nodes = source_nodes
         while len(pending_nodes) != 0:
             increase_level = False
-            level_nodes = list()
+            level_nodes = []
             iterator_nodes = pending_nodes.copy()
             for node_key in iterator_nodes:
                 prev_nodes = {
@@ -605,7 +605,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
         :return: Source processing graph defined by levels.
         :rtype: dict[int, list[NodeHandler]]
         """
-        processing_graph = dict()
+        processing_graph = {}
         not_main_nodes: set = (
             self.__obtain_nodes_not_in_main_processing_graph()
         )
@@ -618,7 +618,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
             level = 0
             for _, handlers in layers.items():
                 increase_level = False
-                level_nodes = list()
+                level_nodes = []
                 for handler in handlers:
                     if handler.id not in not_main_nodes:
                         continue
@@ -665,17 +665,11 @@ class GraphHandler(BaseModel, validate_assignment=True):
         :return: Source nodes.
         :rtype: list[key_str]
         """
-        # source_nodes = list()
-
         return {
             node_key
             for node_key in nodes
             if len(self.__graph.in_edges(node_key)) == 0
         }
-        # for node_key in nodes:
-        #     if len(self.__graph.in_edges(node_key)) == 0:
-        #         source_nodes.append(node_key)
-        # return source_nodes
 
     @validate_call
     @log
@@ -718,7 +712,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
         :return: Dictionary with the output requested in the processing graph
         :rtype: dict[key_str, Any]
         """
-        output = dict()
+        output = {}
         for output_stream in self.__output_streams:
             output[output_stream.key] = context[output_stream.key].get()
         return output
