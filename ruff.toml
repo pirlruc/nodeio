@@ -1,0 +1,17 @@
+line-length = 79
+indent-width = 4
+
+[lint]
+extend-select = [
+    "E",   # pycodestyle
+    "F",   # pyflakes
+    "UP",  # pyupgrade
+    ]
+fixable = ["ALL"]
+
+[lint.pydocstyle]
+convention = "google"
+
+[format]
+indent-style = "space"
+line-ending = "auto"

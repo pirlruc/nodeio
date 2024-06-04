@@ -22,7 +22,7 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "pip install coverage && pip install pytest",
+	"postCreateCommand": "pip install coverage && pip install pytest && pip install ruff && pip install flake8 && pip install pylint",
 
 	// Configure tool-specific properties.
 	"customizations": 
@@ -31,11 +31,15 @@
 		{
 			"extensions": 
 			[
-			    "mhutchie.git-graph"
+			    "ms-python.python"
+			  , "charliermarsh.ruff"
+			  , "ms-python.autopep8"
+			  , "tamasfe.even-better-toml"
+			  , "donjayamanne.python-environment-manager"
+			  , "njpwerner.autodocstring"
+			  , "mhutchie.git-graph"
 			  , "eamodio.gitlens"
 			  , "gruntfuggly.todo-tree"
-			  , "charliermarsh.ruff"
-			  , "njpwerner.autodocstring"
 			]
 		}
 	}

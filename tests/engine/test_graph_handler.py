@@ -1,12 +1,15 @@
-import unittest
-import os
 import asyncio
+import os
+import unittest
+
 from typing_extensions import Self
-from nodeio.engine.graph_handler import GraphHandler
+
 from nodeio.engine.base_node import BaseNode
+from nodeio.engine.configuration import Graph, InputStream, Node
+from nodeio.engine.graph_handler import GraphHandler
 from nodeio.engine.node_factory import NodeFactory
 from nodeio.engine.stream import ContextStream
-from nodeio.engine.configuration import Graph, Node, InputStream
+
 
 class CompleteNodeNoInputs(BaseNode):
     def load(self) -> Self:
