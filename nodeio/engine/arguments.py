@@ -13,8 +13,7 @@ from nodeio.infrastructure.logger import NodeIOLogger
 def __transform_parameter_empty_to_none(value: object):
     if value is Parameter.empty:
         return None
-    else:
-        return value
+    return value
 
 
 _InspectTransformedObject = Annotated[

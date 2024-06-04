@@ -49,14 +49,13 @@ class Action(BaseModel, ABC, validate_assignment=True):
         """
         if isinstance(configuration, nodeio.engine.configuration.ListAction):
             return ListAction.from_configuration(configuration=configuration)
-        elif isinstance(configuration, nodeio.engine.configuration.DictAction):
+        if isinstance(configuration, nodeio.engine.configuration.DictAction):
             return DictAction.from_configuration(configuration=configuration)
-        else:
-            error_message = (
-                f"Action type {type(configuration)} not implemented"
-            )
-            NodeIOLogger().logger.error(error_message)
-            raise NotImplementedError(error_message)
+        error_message = (
+            f"Action type {type(configuration)} not implemented"
+        )
+        NodeIOLogger().logger.error(error_message)
+        raise NotImplementedError(error_message)
 
 
 class ListAction(Action):

@@ -81,5 +81,4 @@ class Factory(BaseModel, validate_assignment=True):
             error_message = "Functor key not present in factory"
             NodeIOLogger().logger.error(error_message)
             raise KeyError(error_message)
-        result = self.__callbacks[key](*args, **kwargs)
-        return result
+        return self.__callbacks[key](*args, **kwargs)

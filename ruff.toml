@@ -6,6 +6,7 @@ extend-select = [
     "E",   # pycodestyle
     "F",   # pyflakes
     "UP",  # pyupgrade
+    "R",   # refactor
     ]
 fixable = ["ALL"]
 
