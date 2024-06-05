@@ -38,6 +38,7 @@ class TestNodeIOLogger(unittest.TestCase):
         log1.logger.debug("test_debug_level")
         log1.logger.info("test_info_level")
         log1.logger.error("test_error_level")
+        log1.logger.handlers.clear()
         fp = open("NodeIOLogger.log")
         lines = fp.readlines()
         fp.close()
