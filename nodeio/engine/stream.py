@@ -8,14 +8,14 @@ import nodeio.engine.configuration
 from nodeio.decorators.logging import log
 from nodeio.engine.action import Action
 from nodeio.engine.arguments import InputArg
-from nodeio.infrastructure.constrained_types import key_str
+from nodeio.infrastructure.constrained_types import KeyStr
 from nodeio.infrastructure.logger import NodeIOLogger
 
 
 class OutputStream(BaseModel, validate_assignment=True):
     """Output stream data."""
 
-    key: key_str
+    key: KeyStr
     type: Optional[object] = None
 
 
@@ -28,7 +28,7 @@ class InputStream(BaseModel, validate_assignment=True):
     actions: Optional[list[Action]] = []
 
     @model_validator(mode="after")
-    def __check_data_type_fields(self) -> Self:
+    def _check_data_type_fields(self) -> Self:
         """Completes information regarding the input stream data and checks if
         data types are coherent.
         Only valid if there is no action to filter the output of an output
@@ -49,9 +49,9 @@ class InputStream(BaseModel, validate_assignment=True):
             if (
                 self.arg.type and self.stream.type
             ) is not None and self.arg.type != self.stream.type:
-                error_message = f"Input argument type {self.arg.type} and "
-                f"stream type {self.stream.type} are different. Please review "
-                f"stream {self.stream.key}"
+                error_message = f"Input argument type {self.arg.type} and " \
+                    f"stream type {self.stream.type} are different. Please " \
+                    f"review stream {self.stream.key}"
                 NodeIOLogger().logger.error(error_message)
                 raise TypeError(error_message)
         return self
@@ -103,8 +103,9 @@ class ContextStream(OutputStream):
         # type is a Union the type will return only one of the values in the
         # Union which is not correct.
         if self.type is not None and not isinstance(new_value, self.type):
-            error_message = f"Value type {type(new_value)} does not correspond"
-            " to the type {self.type} registered for stream {self.key}."
+            error_message = f"Value type {type(new_value)} does not " \
+                f"correspond to the type {self.type} registered for " \
+                f"stream {self.key}."
             NodeIOLogger().logger.error(error_message)
             raise TypeError(error_message)
         self.__value = new_value
@@ -112,7 +113,7 @@ class ContextStream(OutputStream):
 
     @validate_call
     @log
-    def get(self, actions: Optional[list[Action]] = []) -> Any:
+    def get(self, actions: Optional[list[Action]] = None) -> Any:
         """Obtains the value registered in the output stream. The value
         returned is a copy of the original value.
 
@@ -126,12 +127,15 @@ class ContextStream(OutputStream):
         :return: Output stream filtered registered value
         :rtype: Any
         """
+        if actions is None:
+            actions = []
+
         result = self.__value
         for action in actions:
             if not isinstance(result, action.type):
-                error_message = f"Type for selection {type(result)} does not "
-                f"correspond to the type {action.type} registered for action "
-                f"in stream {self.key}."
+                error_message = f"Type for selection {type(result)} does " \
+                    f"not correspond to the type {action.type} registered " \
+                    f"for action in stream {self.key}."
                 NodeIOLogger().logger.error(error_message)
                 raise TypeError(error_message)
             result = result[action.value]

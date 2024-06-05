@@ -6,7 +6,7 @@ from typing_extensions import Self
 
 from nodeio.decorators.logging import log
 from nodeio.engine.base_node import BaseNode
-from nodeio.infrastructure.constrained_types import key_str
+from nodeio.infrastructure.constrained_types import KeyStr
 from nodeio.infrastructure.logger import NodeIOLogger
 from nodeio.patterns.factory import Factory
 
@@ -16,7 +16,7 @@ class NodeFactory(Factory):
 
     @validate_call
     @log
-    def register(self, key: key_str, functor: Callable) -> Self:
+    def register(self, key: KeyStr, functor: Callable) -> Self:
         """Registers a node creation functor with a given key.
 
         :param key: Key identifying the node creation functor
@@ -39,8 +39,9 @@ class NodeFactory(Factory):
             or isabstract(return_values)
             or not isinstance(return_values(), BaseNode)
         ):
-            error_message = "Functor return annotation provided an incorrect "
-            f"type for key {key}. Please review functor annotation"
+            error_message = "Functor return annotation provided an " \
+                f"incorrect type for key {key}. Please review " \
+                "functor annotation"
             NodeIOLogger().logger.error(error_message)
             raise TypeError(error_message)
         super().register(key, functor)
@@ -48,7 +49,7 @@ class NodeFactory(Factory):
 
     @validate_call
     @log
-    def create(self, key: key_str, *args, **kwargs) -> BaseNode:
+    def create(self, key: KeyStr, *args, **kwargs) -> BaseNode:
         """Returns a node created by the functor registered with the provided
         key.
 
@@ -63,8 +64,8 @@ class NodeFactory(Factory):
         """
         result = super().create(key, *args, **kwargs)
         if not isinstance(result, BaseNode):
-            error_message = "Functor for key {key} returns an incorrect type:"
-            f" {type(result)}. Please review functor"
+            error_message = f"Functor for key {key} returns an incorrect " \
+                f"type: {type(result)}. Please review functor"
             NodeIOLogger().logger.error(error_message)
             raise TypeError(error_message)
         return result

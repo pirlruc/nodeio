@@ -6,7 +6,7 @@ from typing_extensions import Self
 
 import nodeio.engine.configuration
 from nodeio.decorators.logging import log
-from nodeio.infrastructure.constrained_types import key_str
+from nodeio.infrastructure.constrained_types import KeyStr
 from nodeio.infrastructure.logger import NodeIOLogger
 
 
@@ -14,7 +14,7 @@ class Action(BaseModel, ABC, validate_assignment=True):
     """Abstract model for defining actions over data types."""
 
     _type: object = PrivateAttr(default=None)
-    value: Union[key_str, int]
+    value: Union[KeyStr, int]
 
     @property
     def type(self) -> object:
@@ -85,7 +85,7 @@ class DictAction(Action):
     """Actions for dictionaries: 1) selection by keyword."""
 
     _type = dict
-    value: key_str
+    value: KeyStr
 
     @staticmethod
     @validate_call

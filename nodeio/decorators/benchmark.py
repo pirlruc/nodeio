@@ -20,10 +20,11 @@ def timer(functor: Callable):
         end_time = perf_counter()
         logger = NodeIOLogger().logger
         logger.info(
-            f" Function: {functor.__name__} -> Time Elapsed (s): "
-            f"{end_time - start_time:.6f}"
+            "Function: %s -> Time Elapsed (s): %.6f",
+            functor.__name__,
+            end_time - start_time
         )
-        logger.info(f' {"-" * 50}')
+        logger.info("%s", "-" * 60)
         return result
 
     return wrapper
@@ -39,12 +40,13 @@ def memory(functor: Callable):
         result = functor(*args, **kwargs)
         current, peak = tracemalloc.get_traced_memory()
         logger = NodeIOLogger().logger
-        logger.info(f" Function: {functor.__name__}")
+        logger.info("Function: %s", functor.__name__)
         logger.info(
-            f" Memory Usage: {current / 10**6:.6f} MB \t"
-            f" Peak Memory Usage: {peak / 10**6:.6f} MB "
+            "Memory Usage: %.6f MB \tPeak Memory Usage: %.6f MB ",
+            current / 10**6,
+            peak / 10**6
         )
-        logger.info(f' {"-" * 50}')
+        logger.info("%s", "-" * 60)
         tracemalloc.stop()
         return result
 
@@ -63,13 +65,14 @@ def timer_memory(functor: Callable):
         current, peak = tracemalloc.get_traced_memory()
         end_time = perf_counter()
         logger = NodeIOLogger().logger
-        logger.info(f" Function: {functor.__name__}")
+        logger.info("Function: %s", functor.__name__)
         logger.info(
-            f" Memory Usage: {current / 10**6:.6f} MB \t"
-            f" Peak Memory Usage: {peak / 10**6:.6f} MB "
+            "Memory Usage: %.6f MB \tPeak Memory Usage: %.6f MB ",
+            current / 10**6,
+            peak / 10**6
         )
-        logger.info(f" Time Elapsed (s): {end_time - start_time:.6f}")
-        logger.info(f' {"-" * 50}')
+        logger.info("Time Elapsed (s): %.6f", end_time - start_time)
+        logger.info("%s", "-" * 60)
         tracemalloc.stop()
         return result
 
@@ -90,16 +93,17 @@ def benchmark(_functor: Callable = None, *, number_repeats: PositiveInt = 100):
             current, peak = tracemalloc.get_traced_memory()
             end_time = perf_counter()
             logger = NodeIOLogger().logger
-            logger.info(f" Function: {functor.__name__}")
+            logger.info("Function: %s", functor.__name__)
             logger.info(
-                f" Memory Usage: {current / 10**6:.6f} MB \t"
-                f" Peak Memory Usage: {peak / 10**6:.6f} MB "
+                "Memory Usage: %.6f MB \tPeak Memory Usage: %.6f MB ",
+                current / 10**6,
+                peak / 10**6
             )
             logger.info(
-                " Time Elapsed (s): "
-                f"{(end_time - start_time)/number_repeats:.6f}"
+                "Time Elapsed (s): %.6f",
+                (end_time - start_time)/number_repeats
             )
-            logger.info(f' {"-" * 50}')
+            logger.info("%s", "-" * 60)
             tracemalloc.stop()
             return result
 

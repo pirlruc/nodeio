@@ -21,16 +21,19 @@ from nodeio.engine.node_factory import NodeFactory
 from nodeio.engine.node_handler import NodeHandler
 from nodeio.engine.stream import ContextStream, OutputStream
 from nodeio.engine.stream_handler import StreamHandler
-from nodeio.infrastructure.constrained_types import key_str
+from nodeio.infrastructure.constrained_types import KeyStr
 from nodeio.infrastructure.logger import NodeIOLogger
 
 
 class NodeType(str, Enum):
-    ExternalSourceNode = "external_source_node"
-    ExternalSinkNode = "external_sink_node"
+    """External node types. These nodes are used to identify the types of 
+    external nodes that can exist. These nodes are not processing nodes."""
+    EXTERNAL_SOURCE_NODE = "external_source_node"
+    EXTERNAL_SINK_NODE = "external_sink_node"
 
 
 class GraphHandler(BaseModel, validate_assignment=True):
+    """Manages and handles a processing graph."""
     __graph: DiGraph = PrivateAttr(default=DiGraph())
     __input_streams: list[OutputStream] = PrivateAttr(default=[])
     __output_streams: list[OutputStream] = PrivateAttr(default=[])
@@ -40,7 +43,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
     __source_processing_graph: dict[int, list[NodeHandler]] = PrivateAttr(
         default={}
     )
-    __source_context: dict[key_str, ContextStream] = PrivateAttr(
+    __source_context: dict[KeyStr, ContextStream] = PrivateAttr(
         default={}
     )
 
@@ -135,12 +138,12 @@ class GraphHandler(BaseModel, validate_assignment=True):
         context = {}
         for level, node_handlers in self.__source_processing_graph.items():
             NodeIOLogger().logger.info(
-                f"Processing {len(node_handlers)} not main nodes in level "
-                f"{level}..."
+                "Processing %d not main nodes in level %d...",
+                len(node_handlers), level
             )
             for node_handler in node_handlers:
                 NodeIOLogger().logger.info(
-                    f"--> Processing node handler {node_handler.id}..."
+                    "--> Processing node handler %s...", node_handler.name
                 )
                 context = node_handler.process(context=context)
         self.__source_context = context
@@ -148,29 +151,32 @@ class GraphHandler(BaseModel, validate_assignment=True):
     @validate_call
     @log
     def process(
-        self, context: Optional[dict[key_str, ContextStream]] = {}
-    ) -> dict[key_str, Any]:
+        self, context: Optional[dict[KeyStr, ContextStream]] = None
+    ) -> dict[KeyStr, Any]:
         """Executed nodes from the main processing graph.
         The context returned correspond only to the main output streams
         registered in the main processing graph.
 
         :param context: External processing context, defaults to dict()
-        :type context: Optional[dict[key_str, ContextStream]], optional
+        :type context: Optional[dict[KeyStr, ContextStream]], optional
 
         :raises RuntimeError: If there are nodes that should be run before the
         main processing graph, the open() method should be executed before
         calling this method.
 
         :return: Processing context
-        :rtype: dict[key_str, Any]
+        :rtype: dict[KeyStr, Any]
         """
+        if context is None:
+            context = {}
+
         if (
             self.number_not_main_processing_graph_nodes != 0
             and len(self.__source_context) == 0
         ):
-            error_message = "The nodes independent from the main processing "
-            "graph must be executed before the main processing graph. Please "
-            "perform open() method."
+            error_message = "The nodes independent from the main processing " \
+                "graph must be executed before the main processing graph. " \
+                "Please perform open() method."
             NodeIOLogger().logger.error(error_message)
             raise RuntimeError(error_message)
 
@@ -182,12 +188,12 @@ class GraphHandler(BaseModel, validate_assignment=True):
         process_context.update(self.__source_context)
         for level, node_handlers in self.__main_processing_graph.items():
             NodeIOLogger().logger.info(
-                f"Processing {len(node_handlers)} main nodes in level "
-                f"{level}..."
+                "Processing %d main nodes in level %d...",
+                len(node_handlers), level
             )
             for node_handler in node_handlers:
                 NodeIOLogger().logger.info(
-                    f"--> Processing node handler {node_handler.id}..."
+                    "--> Processing node handler %s...", node_handler.name
                 )
                 process_context = node_handler.process(context=process_context)
 
@@ -199,29 +205,32 @@ class GraphHandler(BaseModel, validate_assignment=True):
     @validate_call
     @log
     async def process_async(
-        self, context: Optional[dict[key_str, ContextStream]] = {}
-    ) -> dict[key_str, Any]:
+        self, context: Optional[dict[KeyStr, ContextStream]] = None
+    ) -> dict[KeyStr, Any]:
         """Executed nodes from the main processing graph.
         The context returned correspond only to the main output streams
         registered in the main processing graph.
 
         :param context: External processing context, defaults to dict()
-        :type context: Optional[dict[key_str, ContextStream]], optional
+        :type context: Optional[dict[KeyStr, ContextStream]], optional
 
         :raises RuntimeError: If there are nodes that should be run before the
         main processing graph, the open() method should be executed before
         calling this method.
 
         :return: Processing context
-        :rtype: dict[key_str, Any]
+        :rtype: dict[KeyStr, Any]
         """
+        if context is None:
+            context = {}
+
         if (
             self.number_not_main_processing_graph_nodes != 0
             and len(self.__source_context) == 0
         ):
-            error_message = "The nodes independent from the main processing "
-            "graph must be executed before the main processing graph. Please "
-            "perform open() method."
+            error_message = "The nodes independent from the main processing " \
+                "graph must be executed before the main processing graph. " \
+                "Please perform open() method."
             NodeIOLogger().logger.error(error_message)
             raise RuntimeError(error_message)
 
@@ -233,14 +242,15 @@ class GraphHandler(BaseModel, validate_assignment=True):
         process_context.update(self.__source_context)
         for level, node_handlers in self.__main_processing_graph.items():
             NodeIOLogger().logger.info(
-                f"Processing {len(node_handlers)} main nodes in level "
-                f"{level}..."
+                "Processing %d main nodes in level %d...",
+                len(node_handlers), level
             )
             if sys.version_info.major > 3 and sys.version_info.minor >= 11:
                 async with asyncio.TaskGroup() as task_group:
                     for node_handler in node_handlers:
                         NodeIOLogger().logger.info(
-                            f"--> Processing node handler {node_handler.id}..."
+                            "--> Processing node handler %s...",
+                            node_handler.name
                         )
                         task: asyncio.Task = task_group.create_task(
                             node_handler.process_async(context=process_context)
@@ -249,8 +259,8 @@ class GraphHandler(BaseModel, validate_assignment=True):
                         def task_done_callback(task: asyncio.Task):
                             error = task.exception()
                             if error is not None:
-                                error_message = "Error processing node "
-                                f"handler in graph: {error}"
+                                error_message = "Error processing node " \
+                                    f"handler in graph: {error}"
                                 NodeIOLogger().logger.error(error_message)
                                 raise error
                             process_context.update(task.result())
@@ -261,7 +271,8 @@ class GraphHandler(BaseModel, validate_assignment=True):
                 async_tasks = []
                 for node_handler in node_handlers:
                     NodeIOLogger().logger.info(
-                        f"--> Processing node handler {node_handler.id}..."
+                        "--> Processing node handler %s...",
+                        node_handler.name
                     )
                     task: asyncio.Task = asyncio.create_task(
                         node_handler.process_async(context=process_context)
@@ -270,8 +281,8 @@ class GraphHandler(BaseModel, validate_assignment=True):
                     def task_done_callback(task: asyncio.Task):
                         error = task.exception()
                         if error is not None:
-                            error_message = "Error processing node handler in"
-                            f"graph: {error}"
+                            error_message = "Error processing node handler " \
+                                f"in graph: {error}"
                             NodeIOLogger().logger.error(error_message)
                             raise error
                         process_context.update(task.result())
@@ -323,11 +334,11 @@ class GraphHandler(BaseModel, validate_assignment=True):
         # Add nodes to register main input and main output streams
         node_keys = self.__add_node(
             node_keys=node_keys,
-            node_key=NodeType.ExternalSourceNode.name.lower(),
+            node_key=NodeType.EXTERNAL_SOURCE_NODE.name.lower(),
         )
         node_keys = self.__add_node(
             node_keys=node_keys,
-            node_key=NodeType.ExternalSinkNode.name.lower(),
+            node_key=NodeType.EXTERNAL_SINK_NODE.name.lower(),
         )
 
         self.__register_input_streams(
@@ -351,7 +362,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
     def __add_node(
         self,
         node_keys: set,
-        node_key: key_str,
+        node_key: KeyStr,
         handler: Optional[NodeHandler] = None,
     ) -> set:
         """Add node to graph.
@@ -359,7 +370,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
         :param node_keys: Set of node keys already in graph.
         :type node_keys: set
         :param node_key: Node key to be inserted in the graph.
-        :type node_key: key_str
+        :type node_key: KeyStr
         :param handler: Node handler for processing, defaults to None
         :type handler: Optional[NodeHandler], optional
 
@@ -369,8 +380,8 @@ class GraphHandler(BaseModel, validate_assignment=True):
         :rtype: set
         """
         if node_key in node_keys:
-            error_message = f"Node with identifier {node_key} already exists. "
-            "Please review configuration"
+            error_message = f"Node with identifier {node_key} already " \
+                "exists. Please review configuration"
             NodeIOLogger().logger.error(error_message)
             raise KeyError(error_message)
         self.__graph.add_node(node_for_adding=node_key, handler=handler)
@@ -380,14 +391,14 @@ class GraphHandler(BaseModel, validate_assignment=True):
     @validate_call
     @log
     def __register_input_streams(
-        self, stream_handler: StreamHandler, configuration: list[key_str]
+        self, stream_handler: StreamHandler, configuration: list[KeyStr]
     ):
         """Register input streams in stream handler.
 
         :param stream_handler: Handler for input and output streams.
         :type stream_handler: StreamHandler
         :param configuration: Main input streams configuration.
-        :type configuration: list[key_str]
+        :type configuration: list[KeyStr]
         """
         # Main input streams are considered output streams in the framework
         # Therefore, they are registered in the stream handler as output
@@ -397,7 +408,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
             self.__input_streams.append(input_stream)
             stream_handler.add_output_stream(
                 stream=input_stream,
-                origin=NodeType.ExternalSourceNode.name.lower(),
+                origin=NodeType.EXTERNAL_SOURCE_NODE.name.lower(),
             )
 
     @validate_call
@@ -433,26 +444,26 @@ class GraphHandler(BaseModel, validate_assignment=True):
             node: BaseNode = factory.create(
                 key=node_config.type, **input_context
             )
-            handler = NodeHandler(id=node_config.node, functor=node.process)
+            handler = NodeHandler(name=node_config.node, functor=node.process)
             handler.load(
                 stream_handler=stream_handler, configuration=node_config
             )
             node_keys = self.__add_node(
-                node_keys=node_keys, node_key=handler.id, handler=handler
+                node_keys=node_keys, node_key=handler.name, handler=handler
             )
         return node_keys
 
     @validate_call
     @log
     def __register_output_streams(
-        self, stream_handler: StreamHandler, configuration: list[key_str]
+        self, stream_handler: StreamHandler, configuration: list[KeyStr]
     ):
         """Register output streams in stream handler.
 
         :param stream_handler: Handler for input and output streams.
         :type stream_handler: StreamHandler
         :param configuration: Main output streams configuration.
-        :type configuration: list[key_str]
+        :type configuration: list[KeyStr]
 
         :raises ValueError: If the main output stream does not have a
         connection with a node.
@@ -465,17 +476,17 @@ class GraphHandler(BaseModel, validate_assignment=True):
                 output_stream = stream_handler.get_output_stream(
                     key=output_stream_key
                 )
-            except KeyError:
-                error_message = f"Main output stream {output_stream_key} does "
-                "not have a registered connection with a node. Please review "
-                "configuration"
+            except KeyError as error:
+                error_message = f"Main output stream {output_stream_key} " \
+                    "does not have a registered connection with a node. " \
+                    "Please review configuration"
                 NodeIOLogger().logger.error(error_message)
-                raise KeyError(error_message)
+                raise KeyError(error_message) from error
 
             self.__output_streams.append(output_stream)
             stream_handler.register_connection(
                 key=output_stream_key,
-                ending=NodeType.ExternalSinkNode.name.lower(),
+                ending=NodeType.EXTERNAL_SINK_NODE.name.lower(),
             )
 
     @validate_call
@@ -499,8 +510,8 @@ class GraphHandler(BaseModel, validate_assignment=True):
                     isolated_nodes_str += f"{node_key}"
                 else:
                     isolated_nodes_str += f", {node_key}"
-            error_message = f"There are {len(isolated_nodes)} isolated nodes: "
-            f"{isolated_nodes_str}. "
+            error_message = f"There are {len(isolated_nodes)} isolated " \
+                f"nodes: {isolated_nodes_str}. "
 
         if stream_handler.has_unconnected_streams():
             unconnected_streams = stream_handler.get_unconnected_stream_keys()
@@ -510,8 +521,8 @@ class GraphHandler(BaseModel, validate_assignment=True):
                     unconnected_streams_str += f"{stream_key}"
                 else:
                     unconnected_streams_str += f", {stream_key}"
-            error_message += f"There are {len(unconnected_streams)} "
-            f"unconnected streams: {unconnected_streams_str}. "
+            error_message += f"There are {len(unconnected_streams)} " \
+                f"unconnected streams: {unconnected_streams_str}. "
 
         if (
             len(isolated_nodes) != 0
@@ -524,19 +535,19 @@ class GraphHandler(BaseModel, validate_assignment=True):
     @validate_call
     @log
     def __create_main_processing_graph(
-        self, node_handlers: dict[key_str, Optional[NodeHandler]]
+        self, node_handlers: dict[KeyStr, Optional[NodeHandler]]
     ) -> dict[int, list[NodeHandler]]:
         """Obtain main processing graph with node handlers removing external
         source and sink nodes.
 
         :param node_handlers: Node handlers.
-        :type node_handlers: dict[key_str, Optional[NodeHandler]]
+        :type node_handlers: dict[KeyStr, Optional[NodeHandler]]
 
         :return: Main processing graph defined by levels.
         :rtype: dict[int, list[NodeHandler]]
         """
         source_nodes = set()
-        source_nodes.add(NodeType.ExternalSourceNode.name.lower())
+        source_nodes.add(NodeType.EXTERNAL_SOURCE_NODE.name.lower())
         return self.__create_processing_graph(
             source_nodes=source_nodes, node_handlers=node_handlers
         )
@@ -545,14 +556,14 @@ class GraphHandler(BaseModel, validate_assignment=True):
     @log
     def __create_processing_graph(
         self,
-        source_nodes: set[key_str],
-        node_handlers: dict[key_str, Optional[NodeHandler]],
+        source_nodes: set[KeyStr],
+        node_handlers: dict[KeyStr, Optional[NodeHandler]],
     ) -> dict[int, list[NodeHandler]]:
         """Obtain processing graph with node handlers removing external source
         and sink nodes.
 
         :param node_handlers: Node handlers.
-        :type node_handlers: dict[key_str, Optional[NodeHandler]]
+        :type node_handlers: dict[KeyStr, Optional[NodeHandler]]
 
         :return: Processing graph defined by levels.
         :rtype: dict[int, list[NodeHandler]]
@@ -565,16 +576,10 @@ class GraphHandler(BaseModel, validate_assignment=True):
             level_nodes = []
             iterator_nodes = pending_nodes.copy()
             for node_key in iterator_nodes:
-                prev_nodes = {
-                    prev_node_key
-                    for prev_node_key in self.__graph.predecessors(node_key)
-                }
-                next_nodes = {
-                    next_node_key
-                    for next_node_key in self.__graph.successors(node_key)
-                }
+                prev_nodes = set(self.__graph.predecessors(node_key))
+                next_nodes = set(self.__graph.successors(node_key))
                 if any(
-                    [prev_node in iterator_nodes for prev_node in prev_nodes]
+                    prev_node in iterator_nodes for prev_node in prev_nodes
                 ):
                     continue
 
@@ -593,14 +598,14 @@ class GraphHandler(BaseModel, validate_assignment=True):
     @validate_call
     @log
     def __create_source_processing_graph(
-        self, node_handlers: dict[key_str, Optional[NodeHandler]]
+        self, node_handlers: dict[KeyStr, Optional[NodeHandler]]
     ) -> dict[int, list[NodeHandler]]:
         """Obtain source processing graph with node handlers.
         This graph is independent from the main processing graph and should be
         executed before the main processing graph.
 
         :param node_handlers: Node handlers.
-        :type node_handlers: dict[key_str, Optional[NodeHandler]]
+        :type node_handlers: dict[KeyStr, Optional[NodeHandler]]
 
         :return: Source processing graph defined by levels.
         :rtype: dict[int, list[NodeHandler]]
@@ -611,7 +616,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
         )
         if len(not_main_nodes) != 0:
             source_nodes = self.__obtain_source_nodes(nodes=not_main_nodes)
-            source_nodes.add(NodeType.ExternalSourceNode.name.lower())
+            source_nodes.add(NodeType.EXTERNAL_SOURCE_NODE.name.lower())
             layers: dict = self.__create_processing_graph(
                 source_nodes=source_nodes, node_handlers=node_handlers
             )
@@ -620,12 +625,12 @@ class GraphHandler(BaseModel, validate_assignment=True):
                 increase_level = False
                 level_nodes = []
                 for handler in handlers:
-                    if handler.id not in not_main_nodes:
+                    if handler.name not in not_main_nodes:
                         continue
-                    not_main_nodes.remove(handler.id)
-                    if node_handlers[handler.id] is not None:
+                    not_main_nodes.remove(handler.name)
+                    if node_handlers[handler.name] is not None:
                         increase_level = True
-                        level_nodes.append(node_handlers[handler.id])
+                        level_nodes.append(node_handlers[handler.name])
 
                 if increase_level:
                     processing_graph[level] = level_nodes
@@ -637,33 +642,33 @@ class GraphHandler(BaseModel, validate_assignment=True):
         return processing_graph
 
     @log
-    def __obtain_nodes_not_in_main_processing_graph(self) -> set[key_str]:
+    def __obtain_nodes_not_in_main_processing_graph(self) -> set[KeyStr]:
         """Obtain nodes not considered in main processing graph.
 
         :return: Nodes not considered in main processing graph.
-        :rtype: set[key_str]
+        :rtype: set[KeyStr]
         """
         main_layers = list(
             bfs_layers(
                 self.__graph,
-                sources=[NodeType.ExternalSourceNode.name.lower()],
+                sources=[NodeType.EXTERNAL_SOURCE_NODE.name.lower()],
             )
         )
         graph_nodes = set(self.__graph.nodes)
-        main_nodes = set([node for nodes in main_layers for node in nodes])
+        main_nodes = {node for nodes in main_layers for node in nodes}
         return graph_nodes - main_nodes
 
     @validate_call
     @log
-    def __obtain_source_nodes(self, nodes: set[key_str]) -> list[key_str]:
+    def __obtain_source_nodes(self, nodes: set[KeyStr]) -> list[KeyStr]:
         """Obtain source nodes. This corresponds to nodes that do not have
         input streams.
 
         :param nodes: List of nodes
-        :type nodes: set[key_str]
+        :type nodes: set[KeyStr]
 
         :return: Source nodes.
-        :rtype: list[key_str]
+        :rtype: list[KeyStr]
         """
         return {
             node_key
@@ -676,7 +681,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
     def __validate_streams_in_context(
         self,
         streams: list[OutputStream],
-        context: dict[key_str, ContextStream],
+        context: dict[KeyStr, ContextStream],
     ):
         """Validate if streams are present and have a value in context.
 
@@ -684,7 +689,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
         context
         :type streams: list[OutputStream]
         :param context: Graph processing context
-        :type context: dict[key_str, ContextStream]
+        :type context: dict[KeyStr, ContextStream]
 
         :raises KeyError: If stream is not present or it does not have a value
         in context
@@ -694,23 +699,23 @@ class GraphHandler(BaseModel, validate_assignment=True):
                 stream.key not in context
                 or not context[stream.key].has_value()
             ):
-                error_message = "Context does not have the stream "
-                f"{stream.key} value loaded."
+                error_message = "Context does not have the stream " \
+                    f"{stream.key} value loaded."
                 NodeIOLogger().logger.error(error_message)
                 raise KeyError(error_message)
 
     @validate_call
     @log
     def __filter_output(
-        self, context: dict[key_str, ContextStream]
-    ) -> dict[key_str, Any]:
+        self, context: dict[KeyStr, ContextStream]
+    ) -> dict[KeyStr, Any]:
         """Filter output from graph processing context.
 
         :param context: Graph processing context
-        :type context: dict[key_str, ContextStream]
+        :type context: dict[KeyStr, ContextStream]
 
         :return: Dictionary with the output requested in the processing graph
-        :rtype: dict[key_str, Any]
+        :rtype: dict[KeyStr, Any]
         """
         output = {}
         for output_stream in self.__output_streams:

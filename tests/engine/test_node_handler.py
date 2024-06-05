@@ -45,45 +45,45 @@ class TestNodeHandler(unittest.TestCase):
         with self.assertRaises(pydantic_core.ValidationError):
             NodeHandler()
         with self.assertRaises(pydantic_core.ValidationError):
-            NodeHandler(id="a")
+            NodeHandler(name="a")
         with self.assertRaises(pydantic_core.ValidationError):
             NodeHandler(functor=create_complete_node)
         with self.assertRaises(pydantic_core.ValidationError):
-            NodeHandler(id="", functor=create_complete_node)
+            NodeHandler(name="", functor=create_complete_node)
         with self.assertRaises(pydantic_core.ValidationError):
-            NodeHandler(id="  ", functor=create_complete_node)
+            NodeHandler(name="  ", functor=create_complete_node)
         with self.assertRaises(pydantic_core.ValidationError):
-            NodeHandler(id="  ", functor=create_complete_node)
+            NodeHandler(name="  ", functor=create_complete_node)
         with self.assertRaises(pydantic_core.ValidationError):
-            NodeHandler(id="a", functor=1)
+            NodeHandler(name="a", functor=1)
 
     def test_invalid_functor(self):
         def create_abstract_node(a: int) -> BaseNode:
             return a
 
         with self.assertRaises(TypeError):
-            NodeHandler(id="a", functor=create_abstract_node)
+            NodeHandler(name="a", functor=create_abstract_node)
 
     def test_constructor(self):
         def no_output(a: int):
             return a
 
-        handler_1 = NodeHandler(id="a", functor=create_complete_node)
-        handler_2 = NodeHandler(id="b", functor=create_complete_node_options)
-        handler_3 = NodeHandler(id="c", functor=no_output)
-        self.assertEqual(handler_1.id, "a")
+        handler_1 = NodeHandler(name="a", functor=create_complete_node)
+        handler_2 = NodeHandler(name="b", functor=create_complete_node_options)
+        handler_3 = NodeHandler(name="c", functor=no_output)
+        self.assertEqual(handler_1.name, "a")
         self.assertEqual(handler_1.functor, create_complete_node)
         self.assertEqual(handler_1.number_inputs, 0)
         self.assertTrue(handler_1.has_output())
         self.assertEqual(handler_1.number_input_streams, 0)
         self.assertFalse(handler_1.has_output_stream())
-        self.assertEqual(handler_2.id, "b")
+        self.assertEqual(handler_2.name, "b")
         self.assertEqual(handler_2.functor, create_complete_node_options)
         self.assertEqual(handler_2.number_inputs, 2)
         self.assertTrue(handler_2.has_output())
         self.assertEqual(handler_2.number_input_streams, 0)
         self.assertFalse(handler_2.has_output_stream())
-        self.assertEqual(handler_3.id, "c")
+        self.assertEqual(handler_3.name, "c")
         self.assertEqual(handler_3.functor, no_output)
         self.assertEqual(handler_3.number_inputs, 1)
         self.assertFalse(handler_3.has_output())
@@ -92,7 +92,7 @@ class TestNodeHandler(unittest.TestCase):
 
     def test_invalid_identifier(self):
         stream_handler = StreamHandler(graph=networkx.DiGraph())
-        handler = NodeHandler(id="a", functor=create_complete_node)
+        handler = NodeHandler(name="a", functor=create_complete_node)
         with self.assertRaises(KeyError):
             handler.load(stream_handler=stream_handler,
                          configuration=Node(node="b", output_stream="2"))
@@ -102,7 +102,7 @@ class TestNodeHandler(unittest.TestCase):
             return a
 
         stream_handler = StreamHandler(graph=networkx.DiGraph())
-        handler = NodeHandler(id="a", functor=mandatory_inputs)
+        handler = NodeHandler(name="a", functor=mandatory_inputs)
         with self.assertRaises(ValueError):
             handler.load(stream_handler=stream_handler,
                          configuration=Node(node="a", output_stream="2"))
@@ -112,40 +112,48 @@ class TestNodeHandler(unittest.TestCase):
             return a
 
         stream_handler = StreamHandler(graph=networkx.DiGraph())
-        handler = NodeHandler(id="a", functor=mandatory_inputs)
+        handler = NodeHandler(name="a", functor=mandatory_inputs)
         with self.assertRaises(KeyError):
             handler.load(stream_handler=stream_handler, configuration=Node(
-                node="a", input_streams=[InputStream(arg="b", stream="1")], output_stream="2"))
+                node="a", input_streams=[InputStream(arg="b", stream="1")],
+                output_stream="2")
+            )
 
     def test_no_output_stream(self):
         def mandatory_inputs(a: int):
             return a
 
         stream_handler = StreamHandler(graph=networkx.DiGraph())
-        handler = NodeHandler(id="a", functor=mandatory_inputs)
+        handler = NodeHandler(name="a", functor=mandatory_inputs)
         with self.assertRaises(KeyError):
             handler.load(stream_handler=stream_handler, configuration=Node(
-                node="a", input_streams=[InputStream(arg="a", stream="1")], output_stream="2"))
+                node="a", input_streams=[InputStream(arg="a", stream="1")],
+                output_stream="2")
+            )
 
     def test_load(self):
         stream_handler = StreamHandler(graph=networkx.DiGraph())
-        handler_1 = NodeHandler(id="a", functor=create_complete_node)
+        handler_1 = NodeHandler(name="a", functor=create_complete_node)
         stream_handler.add_output_stream(
             OutputStream(key="3"), origin="source")
         stream_handler.add_output_stream(
             OutputStream(key="4"), origin="source")
-        handler_2 = NodeHandler(id="b", functor=create_complete_node_options)
+        handler_2 = NodeHandler(name="b", functor=create_complete_node_options)
         handler_1.load(stream_handler=stream_handler,
                        configuration=Node(node="a", output_stream="1"))
-        handler_2.load(stream_handler=stream_handler, configuration=Node(node="b", input_streams=[
-                       InputStream(arg="y", stream="3"), InputStream(arg="z", stream="4")], output_stream="2"))
-        self.assertEqual(handler_1.id, "a")
+        handler_2.load(stream_handler=stream_handler,
+                       configuration=Node(node="b", input_streams=[
+                           InputStream(arg="y", stream="3"),
+                           InputStream(arg="z", stream="4")
+                       ], output_stream="2")
+                       )
+        self.assertEqual(handler_1.name, "a")
         self.assertEqual(handler_1.functor, create_complete_node)
         self.assertEqual(handler_1.number_inputs, 0)
         self.assertTrue(handler_1.has_output())
         self.assertEqual(handler_1.number_input_streams, 0)
         self.assertTrue(handler_1.has_output_stream())
-        self.assertEqual(handler_2.id, "b")
+        self.assertEqual(handler_2.name, "b")
         self.assertEqual(handler_2.functor, create_complete_node_options)
         self.assertEqual(handler_2.number_inputs, 2)
         self.assertTrue(handler_2.has_output())
@@ -154,7 +162,7 @@ class TestNodeHandler(unittest.TestCase):
 
     def test_process_without_options(self):
         stream_handler = StreamHandler(graph=networkx.DiGraph())
-        handler = NodeHandler(id="a", functor=CompleteNode().process)
+        handler = NodeHandler(name="a", functor=CompleteNode().process)
         handler.load(stream_handler=stream_handler,
                      configuration=Node(node="a", output_stream="1"))
         context = handler.process()
@@ -165,9 +173,11 @@ class TestNodeHandler(unittest.TestCase):
         stream_handler.add_output_stream(
             OutputStream(key="1"), origin="source")
         handler = NodeHandler(
-            id="b", functor=CompleteNodeOptions().load(y=2, z=3).process)
+            name="b", functor=CompleteNodeOptions().load(y=2, z=3).process)
         handler.load(stream_handler=stream_handler, configuration=Node(
-            node="b", input_streams=[InputStream(arg="x", stream="1")], output_stream="2"))
+            node="b", input_streams=[InputStream(arg="x", stream="1")],
+            output_stream="2")
+        )
         context: dict[str, ContextStream] = {}
         context["1"] = ContextStream(key="1", type=int)
         context["1"].register(new_value=1)

@@ -3,17 +3,21 @@ from typing import Annotated, Literal, Optional, Union
 from pydantic import BaseModel, Field, model_validator
 from typing_extensions import Self
 
-from nodeio.infrastructure.constrained_types import key_str
+from nodeio.infrastructure.constrained_types import KeyStr
 from nodeio.infrastructure.logger import NodeIOLogger
 
 
 class ListAction(BaseModel, validate_assignment=True):
+    """List action configuration. This configuration allows to select an 
+    index of a list"""
     index: int
     type: Literal["list"] = "list"
 
 
 class DictAction(BaseModel, validate_assignment=True):
-    key: key_str
+    """Dictionary action configuration. This configuration allows to select 
+    a key of a dictionary"""
+    key: KeyStr
     type: Literal["dict"] = "dict"
 
 
@@ -21,8 +25,8 @@ class InputStream(BaseModel, validate_assignment=True):
     """Input stream configuration. This configuration associates an output
     stream with an input argument."""
 
-    arg: key_str
-    stream: key_str
+    arg: KeyStr
+    stream: KeyStr
     actions: Optional[
         list[
             Annotated[
@@ -37,13 +41,13 @@ class Node(BaseModel, validate_assignment=True):
     output stream."""
 
     type: Literal["node"] = "node"
-    node: key_str
+    node: KeyStr
     input_streams: Optional[list[InputStream]] = []
-    output_stream: Optional[key_str] = None
+    output_stream: Optional[KeyStr] = None
     options: Optional[dict] = {}
 
     @model_validator(mode="after")
-    def __check_configuration(self) -> Self:
+    def _check_configuration(self) -> Self:
         """Validates if configuration as at least one input stream or an output
          stream.
 
@@ -54,16 +58,16 @@ class Node(BaseModel, validate_assignment=True):
         output stream defined.
         """
         if len(self.input_streams) == 0 and self.output_stream is not None:
-            NodeIOLogger().logger.info(f"Node {self.node} is a source node.")
+            NodeIOLogger().logger.info("Node %s is a source node.", self.node)
         elif len(self.input_streams) != 0 and self.output_stream is None:
-            NodeIOLogger().logger.info(f"Node {self.node} is a sink node.")
+            NodeIOLogger().logger.info("Node %s is a sink node.", self.node)
         elif len(self.input_streams) != 0 and self.output_stream is not None:
             NodeIOLogger().logger.info(
-                f"Node {self.node} is a processing node."
+                "Node %s is a processing node.", self.node
             )
         else:  # len(self.input_streams) == 0 and self.output_stream is None:
-            error_message = f"Node {self.node} does not participate in the "
-            "graph computation. Please remove node from the configuration."
+            error_message = f"Node {self.node} does not participate in the " \
+                "graph computation. Please remove node from the configuration."
             NodeIOLogger().logger.error(error_message)
             raise ValueError(error_message)
         return self
@@ -73,12 +77,12 @@ class Graph(BaseModel, validate_assignment=True):
     """Graph configuration. Defines the nodes in the graph as well as the main
     input and output streams."""
 
-    input_streams: list[key_str]
-    output_streams: list[key_str]
+    input_streams: list[KeyStr]
+    output_streams: list[KeyStr]
     nodes: list[Annotated[Union[Node], Field(discriminator="type")]]
 
     @model_validator(mode="after")
-    def __check_configuration(self) -> Self:
+    def _check_configuration(self) -> Self:
         """Validates if configuration as at least one ocurrence of each
         property.
 

@@ -24,18 +24,18 @@ class TestBaseNode(unittest.TestCase):
 
     def test_invalid_constructor(self):
         with self.assertRaises(pydantic_core.ValidationError):
-            CompleteNode(id="")
-            CompleteNode(id="  ")
+            CompleteNode(name="")
+            CompleteNode(name="  ")
 
     def test_invalid_update(self):
         node = CompleteNode()
         with self.assertRaises(pydantic_core.ValidationError):
-            node.id = ""
-            node.id = "  "
+            node.name = ""
+            node.name = "  "
 
     def test_complete_node(self):
         node = CompleteNode()
-        self.assertEqual(node.id, "completenode")
+        self.assertEqual(node.name, "completenode")
         self.assertEqual(node.process(), 4)
-        node.id = "test"
-        self.assertEqual(node.id, 'test')
+        node.name = "test"
+        self.assertEqual(node.name, 'test')

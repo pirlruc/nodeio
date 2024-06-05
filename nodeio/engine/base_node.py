@@ -5,48 +5,46 @@ from pydantic import validate_call
 from typing_extensions import Self
 
 from nodeio.decorators.logging import log
-from nodeio.infrastructure.constrained_types import key_str
+from nodeio.infrastructure.constrained_types import KeyStr
 
 
 class BaseNode(ABC):
     """BaseNode is a base class for nodes within a graph."""
 
-    __id: key_str
+    __name: KeyStr
 
     @property
-    def id(self) -> key_str:
-        """Obtains the node identifier.
+    def name(self) -> KeyStr:
+        """Obtains the node name identifier.
 
-        :return: Node identifier
-        :rtype: key_str
+        :return: Node name identifier
+        :rtype: KeyStr
         """
-        return self.__id
+        return self.__name
 
-    @id.setter
+    @name.setter
     @validate_call
-    def id(self, new_id: key_str):
-        """Updates the node identifier.
+    def name(self, new_name: KeyStr):
+        """Updates the node name identifier.
 
-        :param new_id: Node identifier
-        :type new_id: key_str
+        :param new_name: Node name identifier
+        :type new_name: KeyStr
         """
-        self.__id = new_id
+        self.__name = new_name
 
     @validate_call
     @log
-    def __init__(self, id: Optional[key_str] = None):
+    def __init__(self, name: Optional[KeyStr] = None):
         """Creates a node instance."""
-        self.__id = self.__class__.__name__.lower()
-        if id is not None:
-            self.id = id
+        self.__name = self.__class__.__name__.lower()
+        if name is not None:
+            self.__name = name
 
     @abstractmethod
     def load(self, *args, **kwargs) -> Self:
         """Configures a node."""
-        pass
 
     @abstractmethod
     def process(self, *args, **kwargs) -> Any:
         """Performs the main computation of a node. This method is called by
         the framework whenever the inputs for the method are available."""
-        pass

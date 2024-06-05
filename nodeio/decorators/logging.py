@@ -18,11 +18,11 @@ def log(functor: Callable):
             kwargs_repr = [f"{k}={repr(v)}" for k, v in kwargs.items()]
             signature = ", ".join(args_repr + kwargs_repr)
             logger = NodeIOLogger().logger
-            logger.debug(f" Function: {functor.__name__}")
-            logger.debug(f" Call: {functor.__name__}({signature})")
+            logger.debug("Function: %s", functor.__name__)
+            logger.debug("Call: %s(%s)", functor.__name__, signature)
             result = functor(*args, **kwargs)
-            logger.debug(f" Return: {repr(result)}")
-            logger.debug(f' {"-" * 50}')
+            logger.debug("Return: %s", repr(result))
+            logger.debug("%s", "-" * 50)
         else:
             result = functor(*args, **kwargs)
         return result
