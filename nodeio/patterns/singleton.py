@@ -1,8 +1,9 @@
 import functools
 from threading import Lock
 
+
 def singleton(cls):
-    """Make a class a singleton class (with only one instance)"""
+    """Make a class a singleton class (with only one instance)."""
 
     @functools.wraps(cls)
     def wrapper(*args, **kwargs):

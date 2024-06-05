@@ -1,12 +1,15 @@
-from pydantic import validate_call
 from collections.abc import Callable
 from functools import wraps
-from nodeio.infrastructure.logger import NodeIOLogger
+
+from pydantic import validate_call
+
 from nodeio.infrastructure.constants import LOG_ENABLED
+from nodeio.infrastructure.logger import NodeIOLogger
+
 
 @validate_call
 def log(functor: Callable):
-    """Prints the function signature and return value"""
+    """Prints the function signature and return value."""
 
     @wraps(functor)
     def wrapper(*args, **kwargs):
@@ -15,12 +18,13 @@ def log(functor: Callable):
             kwargs_repr = [f"{k}={repr(v)}" for k, v in kwargs.items()]
             signature = ", ".join(args_repr + kwargs_repr)
             logger = NodeIOLogger().logger
-            logger.debug(f' Function: {functor.__name__}')
-            logger.debug(f' Call: {functor.__name__}({signature})')
+            logger.debug("Function: %s", functor.__name__)
+            logger.debug("Call: %s(%s)", functor.__name__, signature)
             result = functor(*args, **kwargs)
-            logger.debug(f' Return: {repr(result)}')
-            logger.debug(f' {"-" * 50}')
+            logger.debug("Return: %s", repr(result))
+            logger.debug("%s", "-" * 50)
         else:
             result = functor(*args, **kwargs)
         return result
+
     return wrapper

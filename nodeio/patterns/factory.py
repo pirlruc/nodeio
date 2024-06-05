@@ -1,30 +1,32 @@
-from pydantic import validate_call, BaseModel, PrivateAttr
-from typing import Any
-from typing_extensions import Self
 from collections.abc import Callable
-from nodeio.infrastructure.constrained_types import key_str
-from nodeio.infrastructure.logger import NodeIOLogger
-from nodeio.decorators.logging import log
+from typing import Any
 
-class Factory(BaseModel, validate_assignment = True):
-    """Factory pattern implementation for a class"""
-    __callbacks: dict[Callable] = PrivateAttr(default=dict())
+from pydantic import BaseModel, PrivateAttr, validate_call
+from typing_extensions import Self
+
+from nodeio.decorators.logging import log
+from nodeio.infrastructure.constrained_types import KeyStr
+from nodeio.infrastructure.logger import NodeIOLogger
+
+
+class Factory(BaseModel, validate_assignment=True):
+    """Factory pattern implementation for a class."""
+
+    __callbacks: dict[Callable] = PrivateAttr(default={})
 
     @property
     def number_callbacks(self) -> int:
-        """
-        Returns the number of callbacks registered in factory.
+        """Returns the number of callbacks registered in factory.
 
         :return: Number of callbacks
         :rtype: int
         """
         return len(self.__callbacks)
-    
+
     @validate_call
     @log
-    def register(self, key: key_str, functor: Callable) -> Self:
-        """
-        Registers a functor with a given key.
+    def register(self, key: KeyStr, functor: Callable) -> Self:
+        """Registers a functor with a given key.
 
         :param key: Key identifying the functor
         :type key: str
@@ -45,9 +47,8 @@ class Factory(BaseModel, validate_assignment = True):
 
     @validate_call
     @log
-    def unregister(self, key: key_str) -> Self:
-        """
-        Unregisters the functor associated with a given key.
+    def unregister(self, key: KeyStr) -> Self:
+        """Unregisters the functor associated with a given key.
 
         :param key: Key identifying the functor
         :type key: str
@@ -61,14 +62,13 @@ class Factory(BaseModel, validate_assignment = True):
             error_message = "Functor key not present in factory"
             NodeIOLogger().logger.error(error_message)
             raise KeyError(error_message)
-        self.__callbacks.pop(key,None)
+        self.__callbacks.pop(key, None)
         return self
 
     @validate_call
     @log
-    def create(self,key: key_str, *args, **kwargs) -> Any:
-        """
-        Returns the result of the functor registered with the provided key.
+    def create(self, key: KeyStr, *args, **kwargs) -> Any:
+        """Returns the result of the functor registered with the provided key.
 
         :param key: Key identifying the functor
         :type key: str
@@ -81,5 +81,4 @@ class Factory(BaseModel, validate_assignment = True):
             error_message = "Functor key not present in factory"
             NodeIOLogger().logger.error(error_message)
             raise KeyError(error_message)
-        result = self.__callbacks[key](*args, **kwargs)
-        return result
+        return self.__callbacks[key](*args, **kwargs)
