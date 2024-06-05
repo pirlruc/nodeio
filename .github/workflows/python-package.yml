@@ -5,7 +5,7 @@ name: Test and Build Python Package
 
 on:
   push:
-    branches: [ "main", "developer" ]
+    branches: [ "main", "developer", "feature-ci" ]
   pull_request:
     branches: [ "main", "developer" ]
 
@@ -13,8 +13,46 @@ on:
   workflow_dispatch:
   
 jobs:
-  build:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -e .
+
+    - name: Lint with flake8
+      run: |
+        pip install flake8
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 nodeio --count --show-source --statistics
+
+    - name: Lint with ruff
+      run: |
+        pip install ruff
+        ruff check --statistics --output-format=github nodeio
+
+    - name: Lint with pylint
+      run: |
+        pip install pylint
+        pylint -ry nodeio
+
+
+  test:
     runs-on: ${{ matrix.os }}
+    needs: [lint]
     strategy:
       fail-fast: false
       matrix:
@@ -27,27 +65,18 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install -r requirements.txt
         pip install -e .
-    - name: Lint with flake8
-      run: |
-        pip install flake8
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Lint with ruff
-      run: |
-        pip install ruff
-        ruff check --output-format=github .
-      continue-on-error: true
+
     - name: Test with pytest
       run: |
         python -m pip install pytest pytest-cov
         pytest tests/ --doctest-modules --junitxml=junit/test-results-${{ matrix.os }}-${{ matrix.python-version }}.xml --cov=nodeio --cov-report=xml --cov-report=html
+    
     - name: Upload pytest test results
       uses: actions/upload-artifact@v4
       with:
@@ -57,6 +86,29 @@ jobs:
           coverage.xml
           htmlcov/
       if: ${{ always() }}
+
+  build:
+    runs-on: ${{ matrix.os }}
+    needs: [lint, test]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.9", "3.10", "3.11"]
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -e .
+
     - name: Build package
       run: |
         pip install build
