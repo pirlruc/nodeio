@@ -44,8 +44,8 @@ class NodeHandler(BaseModel, validate_assignment=True):
     @validate_call
     @log
     def __init__(self, name: KeyStr, functor: Callable, **data) -> Self:
-        """Creates a NodeHandler instance base on a name identifier and a 
-        functor.
+        """Creates a NodeHandler instance base on a name identifier and a
+         functor.
 
         :param name: Node name identifier
         :type name: KeyStr
@@ -83,8 +83,8 @@ class NodeHandler(BaseModel, validate_assignment=True):
         :param configuration: Configuration for the node.
         :type configuration: Node
 
-        :raises KeyError: If node name identifier (configuration) does not 
-        match with the node handler name identifier (self).
+        :raises KeyError: If node name identifier (configuration) does not
+         match with the node handler name identifier (self).
         :raises ValueError: If functor has mandatory inputs but there are no
         input streams registered in the handler.
         :raises KeyError: If input argument associated with an input stream
@@ -106,7 +106,8 @@ class NodeHandler(BaseModel, validate_assignment=True):
             and self.__has_mandatory_inputs()
         ):
             error_message = "Functor has mandatory input arguments for node " \
-                f"{self.name}. Please review configuration to add input streams"
+                f"{self.name}. Please review configuration to add input " \
+                "streams"
             NodeIOLogger().logger.error(error_message)
             raise ValueError(error_message)
 

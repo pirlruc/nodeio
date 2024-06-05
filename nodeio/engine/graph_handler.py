@@ -26,8 +26,8 @@ from nodeio.infrastructure.logger import NodeIOLogger
 
 
 class NodeType(str, Enum):
-    """External node types. These nodes are used to identify the types of 
-    external nodes that can exist. These nodes are not processing nodes."""
+    """External node types. These nodes are used to identify the types of
+     external nodes that can exist. These nodes are not processing nodes."""
     EXTERNAL_SOURCE_NODE = "external_source_node"
     EXTERNAL_SINK_NODE = "external_sink_node"
 

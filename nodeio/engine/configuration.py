@@ -8,22 +8,22 @@ from nodeio.infrastructure.logger import NodeIOLogger
 
 
 class ListAction(BaseModel, validate_assignment=True):
-    """List action configuration. This configuration allows to select an 
-    index of a list"""
+    """List action configuration. This configuration allows to select an
+     index of a list"""
     index: int
     type: Literal["list"] = "list"
 
 
 class DictAction(BaseModel, validate_assignment=True):
-    """Dictionary action configuration. This configuration allows to select 
-    a key of a dictionary"""
+    """Dictionary action configuration. This configuration allows to select
+     a key of a dictionary"""
     key: KeyStr
     type: Literal["dict"] = "dict"
 
 
 class InputStream(BaseModel, validate_assignment=True):
     """Input stream configuration. This configuration associates an output
-    stream with an input argument."""
+     stream with an input argument."""
 
     arg: KeyStr
     stream: KeyStr
