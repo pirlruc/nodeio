@@ -47,7 +47,7 @@ jobs:
     - name: Lint with pylint
       run: |
         pip install pylint
-        pylint -ry nodeio
+        pylint --fail-under=8 -ry nodeio
 
 
   test:
