@@ -49,11 +49,6 @@ jobs:
         pip install pylint
         pylint --fail-under=8 -ry nodeio
 
-    - uses: Silleellie/pylint-github-action@v2
-      with:
-        lint-path: nodeio
-        python-version: ${{ matrix.python-version }}
-
 
   test:
     runs-on: ${{ matrix.os }}
