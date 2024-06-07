@@ -238,58 +238,12 @@ class GraphHandler(BaseModel, validate_assignment=True):
             streams=self.__input_streams, context=context
         )
 
-        process_context = context.copy()
-        process_context.update(self.__source_context)
-        for level, node_handlers in self.__main_processing_graph.items():
-            NodeIOLogger().logger.info(
-                "Processing %d main nodes in level %d...",
-                len(node_handlers), level
-            )
-            if sys.version_info.major > 3 and sys.version_info.minor >= 11:
-                async with asyncio.TaskGroup() as task_group:
-                    for node_handler in node_handlers:
-                        NodeIOLogger().logger.info(
-                            "--> Processing node handler %s...",
-                            node_handler.name
-                        )
-                        task: asyncio.Task = task_group.create_task(
-                            node_handler.process_async(context=process_context)
-                        )
-
-                        def task_done_callback(task: asyncio.Task):
-                            error = task.exception()
-                            if error is not None:
-                                error_message = "Error processing node " \
-                                    f"handler in graph: {error}"
-                                NodeIOLogger().logger.error(error_message)
-                                raise error
-                            process_context.update(task.result())
-
-                        task.add_done_callback(task_done_callback)
-
-            else:  # < 3.11:
-                async_tasks = []
-                for node_handler in node_handlers:
-                    NodeIOLogger().logger.info(
-                        "--> Processing node handler %s...",
-                        node_handler.name
-                    )
-                    task: asyncio.Task = asyncio.create_task(
-                        node_handler.process_async(context=process_context)
-                    )
-
-                    def task_done_callback(task: asyncio.Task):
-                        error = task.exception()
-                        if error is not None:
-                            error_message = "Error processing node handler " \
-                                f"in graph: {error}"
-                            NodeIOLogger().logger.error(error_message)
-                            raise error
-                        process_context.update(task.result())
-
-                    task.add_done_callback(task_done_callback)
-                    async_tasks.append(task)
-                await asyncio.gather(*async_tasks)
+        if sys.version_info.major >= 3 and sys.version_info.minor >= 11:
+            process_context = await self.__obtain_process_context_python_311(
+                context=context)
+        else:  # < 3.11:
+            process_context = await self.__obtain_process_context_python_39(
+                context=context)
 
         self.__validate_streams_in_context(
             streams=self.__output_streams, context=process_context
@@ -721,3 +675,89 @@ class GraphHandler(BaseModel, validate_assignment=True):
         for output_stream in self.__output_streams:
             output[output_stream.key] = context[output_stream.key].get()
         return output
+
+    @log
+    async def __obtain_process_context_python_311(
+        self,
+        context: dict[KeyStr, ContextStream]
+    ) -> dict[KeyStr, ContextStream]:
+        """Obtain process context for Python >= 3.11.
+
+        :param context: External processing context
+        :type context: dict[KeyStr, ContextStream]
+
+        :return: Processing context from nodes in graph
+        :rtype: dict[KeyStr, ContextStream]
+        """
+        process_context = context.copy()
+        process_context.update(self.__source_context)
+        for level, node_handlers in self.__main_processing_graph.items():
+            NodeIOLogger().logger.info(
+                "Processing %d main nodes in level %d...",
+                len(node_handlers), level
+            )
+            async with asyncio.TaskGroup() as task_group:
+                for node_handler in node_handlers:
+                    NodeIOLogger().logger.info(
+                        "--> Processing node handler %s...",
+                        node_handler.name
+                    )
+                    task: asyncio.Task = task_group.create_task(
+                        node_handler.process_async(context=process_context)
+                    )
+
+                    def task_done_callback(task: asyncio.Task):
+                        error = task.exception()
+                        if error is not None:
+                            error_message = "Error processing node " \
+                                f"handler in graph: {error}"
+                            NodeIOLogger().logger.error(error_message)
+                            raise error
+                        process_context.update(task.result())
+
+                    task.add_done_callback(task_done_callback)
+        return process_context
+
+    @log
+    async def __obtain_process_context_python_39(
+        self,
+        context: dict[KeyStr, ContextStream]
+    ) -> dict[KeyStr, ContextStream]:
+        """Obtain process context for Python < 3.11.
+
+        :param context: External processing context
+        :type context: dict[KeyStr, ContextStream]
+
+        :return: Processing context from nodes in graph
+        :rtype: dict[KeyStr, ContextStream]
+        """
+        process_context = context.copy()
+        process_context.update(self.__source_context)
+        for level, node_handlers in self.__main_processing_graph.items():
+            NodeIOLogger().logger.info(
+                "Processing %d main nodes in level %d...",
+                len(node_handlers), level
+            )
+            async_tasks = []
+            for node_handler in node_handlers:
+                NodeIOLogger().logger.info(
+                    "--> Processing node handler %s...",
+                    node_handler.name
+                )
+                task: asyncio.Task = asyncio.create_task(
+                    node_handler.process_async(context=process_context)
+                )
+
+                def task_done_callback(task: asyncio.Task):
+                    error = task.exception()
+                    if error is not None:
+                        error_message = "Error processing node handler " \
+                            f"in graph: {error}"
+                        NodeIOLogger().logger.error(error_message)
+                        raise error
+                    process_context.update(task.result())
+
+                task.add_done_callback(task_done_callback)
+                async_tasks.append(task)
+            await asyncio.gather(*async_tasks)
+        return process_context
