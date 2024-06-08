@@ -6,6 +6,7 @@ from nodeio.decorators.logging import log
 from nodeio.engine.stream import OutputStream
 from nodeio.infrastructure.constrained_types import KeyStr
 from nodeio.infrastructure.logger import NodeIOLogger
+from nodeio.nodeio.infrastructure.exceptions import ConfigurationError
 
 
 class _Connection(BaseModel):
@@ -88,6 +89,8 @@ class StreamHandler(
         :type key: KeyStr
 
         :raises KeyError: Output stream key does not exist.
+        :raises ConfigurationError: Origin and ending node for stream is
+         the same.
 
         :return: Instance updated with the output stream connection.
         :rtype: Self
@@ -104,7 +107,7 @@ class StreamHandler(
                 f"{ending} for stream {key} is the same. Please review " \
                 "configuration"
             NodeIOLogger().logger.error(error_message)
-            raise ValueError(error_message)
+            raise ConfigurationError(error_message)
 
         self.graph.add_edge(u_of_edge=origin_node, v_of_edge=ending)
         self.__output[key].connected = True

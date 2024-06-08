@@ -11,6 +11,7 @@ from nodeio.engine.stream import ContextStream, InputStream, OutputStream
 from nodeio.engine.stream_handler import StreamHandler
 from nodeio.infrastructure.constrained_types import KeyStr
 from nodeio.infrastructure.logger import NodeIOLogger
+from nodeio.nodeio.infrastructure.exceptions import ConfigurationError
 
 
 class NodeHandler(BaseModel, validate_assignment=True):
@@ -83,14 +84,14 @@ class NodeHandler(BaseModel, validate_assignment=True):
         :param configuration: Configuration for the node.
         :type configuration: Node
 
-        :raises KeyError: If node name identifier (configuration) does not
+        :raises RuntimeError: If node name identifier (configuration) does not
          match with the node handler name identifier (self).
-        :raises ValueError: If functor has mandatory inputs but there are no
-        input streams registered in the handler.
-        :raises KeyError: If input argument associated with an input stream
-        does not exist in the functor registered in the handler.
-        :raises KeyError: If there is no output stream associated with an input
-          stream key.
+        :raises ConfigurationError: If functor has mandatory inputs but there
+         are no input streams registered in the handler.
+        :raises ConfigurationError: If input argument associated with an input
+         stream does not exist in the functor registered in the handler.
+        :raises ConfigurationError: If there is no output stream associated
+         with an input stream key.
 
         :return: Updated node handler instance.
         :rtype: Self
@@ -99,7 +100,7 @@ class NodeHandler(BaseModel, validate_assignment=True):
             error_message = f"Node identifier {configuration.node} does not " \
                 f"match handler identifier {self.name}"
             NodeIOLogger().logger.error(error_message)
-            raise KeyError(error_message)
+            raise RuntimeError(error_message)
 
         if (
             len(configuration.input_streams) == 0
@@ -109,7 +110,7 @@ class NodeHandler(BaseModel, validate_assignment=True):
                 f"{self.name}. Please review configuration to add input " \
                 "streams"
             NodeIOLogger().logger.error(error_message)
-            raise ValueError(error_message)
+            raise ConfigurationError(error_message)
 
         for input_stream_config in configuration.input_streams:
             if input_stream_config.arg not in self.__inputs.keys():
@@ -117,7 +118,7 @@ class NodeHandler(BaseModel, validate_assignment=True):
                     f"provided for stream {input_stream_config.stream} does " \
                     "not exist in functor. Please review configuration"
                 NodeIOLogger().logger.error(error_message)
-                raise KeyError(error_message)
+                raise ConfigurationError(error_message)
 
             try:
                 output_stream = stream_handler.get_output_stream(
@@ -128,7 +129,7 @@ class NodeHandler(BaseModel, validate_assignment=True):
                     f"defined for node {self.name} does not have an output " \
                     "stream associated. Please review configuration"
                 NodeIOLogger().logger.error(error_message)
-                raise KeyError(error_message) from error
+                raise ConfigurationError(error_message) from error
 
             input_stream: InputStream = InputStream.from_configuration(
                 configuration=input_stream_config

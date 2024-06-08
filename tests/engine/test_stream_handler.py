@@ -5,6 +5,7 @@ import pydantic_core
 
 from nodeio.engine.stream import OutputStream
 from nodeio.engine.stream_handler import StreamHandler
+from nodeio.nodeio.infrastructure.exceptions import ConfigurationError
 
 
 class TestStreamHandler(unittest.TestCase):
@@ -55,7 +56,7 @@ class TestStreamHandler(unittest.TestCase):
     def test_connection_origin_ending_same(self):
         handler = StreamHandler(graph=networkx.DiGraph())
         handler.add_output_stream(stream=OutputStream(key="a"), origin="a")
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ConfigurationError):
             handler.register_connection(key="a", ending="a")
 
     def test_register_connection(self):

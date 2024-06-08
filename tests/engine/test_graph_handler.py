@@ -9,6 +9,7 @@ from nodeio.engine.configuration import Graph, InputStream, Node
 from nodeio.engine.graph_handler import GraphHandler
 from nodeio.engine.node_factory import NodeFactory
 from nodeio.engine.stream import ContextStream
+from nodeio.nodeio.infrastructure.exceptions import ConfigurationError
 
 
 class CompleteNodeNoInputs(BaseNode):
@@ -72,7 +73,7 @@ class TestGraphHandler(unittest.TestCase):
                     arg="x", stream="a")], output_stream="b"),
                 Node(node="a", input_streams=[InputStream(arg="x", stream="a")], output_stream="c")])
         handler = GraphHandler()
-        with self.assertRaises(KeyError):
+        with self.assertRaises(ConfigurationError):
             handler.load(factory=factory, configuration=config)
 
     def test_main_output_stream_not_connected(self):
@@ -83,7 +84,7 @@ class TestGraphHandler(unittest.TestCase):
             output_streams=["b"],
             nodes=[Node(node="a", input_streams=[InputStream(arg="x", stream="a")])])
         handler = GraphHandler()
-        with self.assertRaises(KeyError):
+        with self.assertRaises(ConfigurationError):
             handler.load(factory=factory, configuration=config)
 
     def test_with_isolated_nodes(self):
@@ -97,7 +98,7 @@ class TestGraphHandler(unittest.TestCase):
                 Node(node="b", output_stream="c")
             ])
         handler = GraphHandler()
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ConfigurationError):
             handler.load(factory=factory, configuration=config)
 
     def test_with_unconnected_streams(self):
@@ -108,7 +109,7 @@ class TestGraphHandler(unittest.TestCase):
             output_streams=["b"],
             nodes=[Node(node="a", output_stream="b")])
         handler = GraphHandler()
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ConfigurationError):
             handler.load(factory=factory, configuration=config)
 
     def test_config_without_options(self):

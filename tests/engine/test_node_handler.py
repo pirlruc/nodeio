@@ -9,6 +9,7 @@ from nodeio.engine.configuration import InputStream, Node
 from nodeio.engine.node_handler import NodeHandler
 from nodeio.engine.stream import ContextStream, OutputStream
 from nodeio.engine.stream_handler import StreamHandler
+from nodeio.nodeio.infrastructure.exceptions import ConfigurationError
 
 
 class CompleteNode(BaseNode):
@@ -93,7 +94,7 @@ class TestNodeHandler(unittest.TestCase):
     def test_invalid_identifier(self):
         stream_handler = StreamHandler(graph=networkx.DiGraph())
         handler = NodeHandler(name="a", functor=create_complete_node)
-        with self.assertRaises(KeyError):
+        with self.assertRaises(RuntimeError):
             handler.load(stream_handler=stream_handler,
                          configuration=Node(node="b", output_stream="2"))
 
@@ -103,7 +104,7 @@ class TestNodeHandler(unittest.TestCase):
 
         stream_handler = StreamHandler(graph=networkx.DiGraph())
         handler = NodeHandler(name="a", functor=mandatory_inputs)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ConfigurationError):
             handler.load(stream_handler=stream_handler,
                          configuration=Node(node="a", output_stream="2"))
 
@@ -113,7 +114,7 @@ class TestNodeHandler(unittest.TestCase):
 
         stream_handler = StreamHandler(graph=networkx.DiGraph())
         handler = NodeHandler(name="a", functor=mandatory_inputs)
-        with self.assertRaises(KeyError):
+        with self.assertRaises(ConfigurationError):
             handler.load(stream_handler=stream_handler, configuration=Node(
                 node="a", input_streams=[InputStream(arg="b", stream="1")],
                 output_stream="2")
@@ -125,7 +126,7 @@ class TestNodeHandler(unittest.TestCase):
 
         stream_handler = StreamHandler(graph=networkx.DiGraph())
         handler = NodeHandler(name="a", functor=mandatory_inputs)
-        with self.assertRaises(KeyError):
+        with self.assertRaises(ConfigurationError):
             handler.load(stream_handler=stream_handler, configuration=Node(
                 node="a", input_streams=[InputStream(arg="a", stream="1")],
                 output_stream="2")

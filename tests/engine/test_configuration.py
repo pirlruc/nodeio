@@ -9,6 +9,7 @@ from nodeio.engine.configuration import (
     ListAction,
     Node,
 )
+from nodeio.nodeio.infrastructure.exceptions import ConfigurationError
 
 
 class TestListAction(unittest.TestCase):
@@ -138,9 +139,9 @@ class TestNode(unittest.TestCase):
             Node(node="  ")
 
     def test_invalid_config(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ConfigurationError):
             Node(node=" a ")
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ConfigurationError):
             Node(node="a", input_streams=[])
 
     def test_constructor(self):
@@ -223,12 +224,12 @@ class TestGraph(unittest.TestCase):
                   "b"], output_streams=["  "])
 
     def test_at_least_one_ocurrence(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ConfigurationError):
             Graph(nodes=[], input_streams=["b"], output_streams=["c"])
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ConfigurationError):
             Graph(nodes=[{"node": "a", "type": "node"}],
                   input_streams=[], output_streams=["c"])
-        with self.assertRaises(ValueError):
+        with self.assertRaises(ConfigurationError):
             Graph(nodes=[{"node": "a", "type": "node"}],
                   input_streams=["b"], output_streams=[])
 

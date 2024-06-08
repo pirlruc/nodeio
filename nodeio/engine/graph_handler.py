@@ -23,6 +23,7 @@ from nodeio.engine.stream import ContextStream, OutputStream
 from nodeio.engine.stream_handler import StreamHandler
 from nodeio.infrastructure.constrained_types import KeyStr
 from nodeio.infrastructure.logger import NodeIOLogger
+from nodeio.nodeio.infrastructure.exceptions import ConfigurationError
 
 
 class NodeType(str, Enum):
@@ -315,29 +316,30 @@ class GraphHandler(BaseModel, validate_assignment=True):
     @log
     def __add_node(
         self,
-        node_keys: set,
+        node_keys: set[KeyStr],
         node_key: KeyStr,
         handler: Optional[NodeHandler] = None,
-    ) -> set:
+    ) -> set[KeyStr]:
         """Add node to graph.
 
         :param node_keys: Set of node keys already in graph.
-        :type node_keys: set
+        :type node_keys: set[KeyStr]
         :param node_key: Node key to be inserted in the graph.
         :type node_key: KeyStr
         :param handler: Node handler for processing, defaults to None
         :type handler: Optional[NodeHandler], optional
 
-        :raises KeyError: Node key being inserted already exists in graph.
+        :raises ConfigurationError: Node key being inserted already exists
+         in graph.
 
         :return: Updated set of node keys in graph
-        :rtype: set
+        :rtype: set[KeyStr]
         """
         if node_key in node_keys:
             error_message = f"Node with identifier {node_key} already " \
                 "exists. Please review configuration"
             NodeIOLogger().logger.error(error_message)
-            raise KeyError(error_message)
+            raise ConfigurationError(error_message)
         self.__graph.add_node(node_for_adding=node_key, handler=handler)
         node_keys.add(node_key)
         return node_keys
@@ -419,8 +421,8 @@ class GraphHandler(BaseModel, validate_assignment=True):
         :param configuration: Main output streams configuration.
         :type configuration: list[KeyStr]
 
-        :raises ValueError: If the main output stream does not have a
-        connection with a node.
+        :raises ConfigurationError: If the main output stream does not have a
+         connection with a node.
         """
         # Main output streams are considered input streams in the framework
         # Therefore, they are not registered in the stream handler.
@@ -435,7 +437,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
                     "does not have a registered connection with a node. " \
                     "Please review configuration"
                 NodeIOLogger().logger.error(error_message)
-                raise KeyError(error_message) from error
+                raise ConfigurationError(error_message) from error
 
             self.__output_streams.append(output_stream)
             stream_handler.register_connection(
@@ -452,8 +454,8 @@ class GraphHandler(BaseModel, validate_assignment=True):
         :param stream_handler: Handler for input and output streams.
         :type stream_handler: StreamHandler
 
-        :raises ValueError: If the graph has isolated nodes or has streams
-        without connections.
+        :raises ConfigurationError: If the graph has isolated nodes or
+         has streams without connections.
         """
         isolated_nodes = list(isolates(self.__graph))
         error_message = ""
@@ -484,7 +486,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
         ):
             error_message += "Please review configuration"
             NodeIOLogger().logger.error(error_message)
-            raise ValueError(error_message)
+            raise ConfigurationError(error_message)
 
     @validate_call
     @log
@@ -686,6 +688,8 @@ class GraphHandler(BaseModel, validate_assignment=True):
         :param context: External processing context
         :type context: dict[KeyStr, ContextStream]
 
+        :raises RuntimeError: If an error occurs while processing a node
+
         :return: Processing context from nodes in graph
         :rtype: dict[KeyStr, ContextStream]
         """
@@ -710,9 +714,10 @@ class GraphHandler(BaseModel, validate_assignment=True):
                         error = task.exception()
                         if error is not None:
                             error_message = "Error processing node " \
-                                f"handler in graph: {error}"
+                                f"handler {node_handler.name} in " \
+                                f"graph: {error}"
                             NodeIOLogger().logger.error(error_message)
-                            raise error
+                            raise RuntimeError(error_message) from error
                         process_context.update(task.result())
 
                     task.add_done_callback(task_done_callback)
@@ -727,6 +732,8 @@ class GraphHandler(BaseModel, validate_assignment=True):
 
         :param context: External processing context
         :type context: dict[KeyStr, ContextStream]
+
+        :raises RuntimeError: If an error occurs while processing a node
 
         :return: Processing context from nodes in graph
         :rtype: dict[KeyStr, ContextStream]
@@ -752,9 +759,9 @@ class GraphHandler(BaseModel, validate_assignment=True):
                     error = task.exception()
                     if error is not None:
                         error_message = "Error processing node handler " \
-                            f"in graph: {error}"
+                            f"{node_handler.name} in graph: {error}"
                         NodeIOLogger().logger.error(error_message)
-                        raise error
+                        raise RuntimeError(error_message) from error
                     process_context.update(task.result())
 
                 task.add_done_callback(task_done_callback)

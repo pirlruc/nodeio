@@ -5,6 +5,7 @@ from typing_extensions import Self
 
 from nodeio.infrastructure.constrained_types import KeyStr
 from nodeio.infrastructure.logger import NodeIOLogger
+from nodeio.nodeio.infrastructure.exceptions import ConfigurationError
 
 
 class ListAction(BaseModel, validate_assignment=True):
@@ -54,8 +55,8 @@ class Node(BaseModel, validate_assignment=True):
         :return: Instance of Node
         :rtype: Self
 
-        :raises ValueError: If configuration does not have input streams or an
-        output stream defined.
+        :raises ConfigurationError: If configuration does not have input
+         streams or an output stream defined.
         """
         if len(self.input_streams) == 0 and self.output_stream is not None:
             NodeIOLogger().logger.info("Node %s is a source node.", self.node)
@@ -69,7 +70,7 @@ class Node(BaseModel, validate_assignment=True):
             error_message = f"Node {self.node} does not participate in the " \
                 "graph computation. Please remove node from the configuration."
             NodeIOLogger().logger.error(error_message)
-            raise ValueError(error_message)
+            raise ConfigurationError(error_message)
         return self
 
 
@@ -89,30 +90,31 @@ class Graph(BaseModel, validate_assignment=True):
         :return: Instance of Graph
         :rtype: Self
 
-        :raises ValueError: If configuration does not have input streams
-        defined.
-        :raises ValueError: If configuration does not have output streams
-        defined.
-        :raises ValueError: If configuration does not have nodes defined.
+        :raises ConfigurationError: If configuration does not have input
+         streams defined.
+        :raises ConfigurationError: If configuration does not have output
+         streams defined.
+        :raises ConfigurationError: If configuration does not have nodes
+         defined.
         """
         if len(self.input_streams) == 0:
             error_message = (
                 "No main input streams defined. Please review configuration"
             )
             NodeIOLogger().logger.error(error_message)
-            raise ValueError(error_message)
+            raise ConfigurationError(error_message)
 
         if len(self.output_streams) == 0:
             error_message = (
                 "No main output streams defined. Please review configuration"
             )
             NodeIOLogger().logger.error(error_message)
-            raise ValueError(error_message)
+            raise ConfigurationError(error_message)
 
         if len(self.nodes) == 0:
             error_message = (
                 "No nodes defined for graph. Please review configuration"
             )
             NodeIOLogger().logger.error(error_message)
-            raise ValueError(error_message)
+            raise ConfigurationError(error_message)
         return self
