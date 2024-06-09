@@ -10,8 +10,8 @@ from nodeio.engine.configuration import Node
 from nodeio.engine.stream import ContextStream, InputStream, OutputStream
 from nodeio.engine.stream_handler import StreamHandler
 from nodeio.infrastructure.constrained_types import KeyStr
+from nodeio.infrastructure.exceptions import ConfigurationError
 from nodeio.infrastructure.logger import NodeIOLogger
-from nodeio.nodeio.infrastructure.exceptions import ConfigurationError
 
 
 class NodeHandler(BaseModel, validate_assignment=True):

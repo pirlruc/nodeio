@@ -5,8 +5,8 @@ from typing_extensions import Self
 from nodeio.decorators.logging import log
 from nodeio.engine.stream import OutputStream
 from nodeio.infrastructure.constrained_types import KeyStr
+from nodeio.infrastructure.exceptions import ConfigurationError
 from nodeio.infrastructure.logger import NodeIOLogger
-from nodeio.nodeio.infrastructure.exceptions import ConfigurationError
 
 
 class _Connection(BaseModel):

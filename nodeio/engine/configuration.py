@@ -4,8 +4,8 @@ from pydantic import BaseModel, Field, model_validator
 from typing_extensions import Self
 
 from nodeio.infrastructure.constrained_types import KeyStr
+from nodeio.infrastructure.exceptions import ConfigurationError
 from nodeio.infrastructure.logger import NodeIOLogger
-from nodeio.nodeio.infrastructure.exceptions import ConfigurationError
 
 
 class ListAction(BaseModel, validate_assignment=True):

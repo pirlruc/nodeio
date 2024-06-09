@@ -22,8 +22,8 @@ from nodeio.engine.node_handler import NodeHandler
 from nodeio.engine.stream import ContextStream, OutputStream
 from nodeio.engine.stream_handler import StreamHandler
 from nodeio.infrastructure.constrained_types import KeyStr
+from nodeio.infrastructure.exceptions import ConfigurationError
 from nodeio.infrastructure.logger import NodeIOLogger
-from nodeio.nodeio.infrastructure.exceptions import ConfigurationError
 
 
 class NodeType(str, Enum):
