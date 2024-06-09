@@ -9,7 +9,7 @@ from nodeio.engine.configuration import InputStream, Node
 from nodeio.engine.node_handler import NodeHandler
 from nodeio.engine.stream import ContextStream, OutputStream
 from nodeio.engine.stream_handler import StreamHandler
-from nodeio.nodeio.infrastructure.exceptions import ConfigurationError
+from nodeio.infrastructure.exceptions import ConfigurationError
 
 
 class CompleteNode(BaseNode):

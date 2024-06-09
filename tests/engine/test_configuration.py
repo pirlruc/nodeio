@@ -9,7 +9,7 @@ from nodeio.engine.configuration import (
     ListAction,
     Node,
 )
-from nodeio.nodeio.infrastructure.exceptions import ConfigurationError
+from nodeio.infrastructure.exceptions import ConfigurationError
 
 
 class TestListAction(unittest.TestCase):

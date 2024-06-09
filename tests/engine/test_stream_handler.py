@@ -5,7 +5,7 @@ import pydantic_core
 
 from nodeio.engine.stream import OutputStream
 from nodeio.engine.stream_handler import StreamHandler
-from nodeio.nodeio.infrastructure.exceptions import ConfigurationError
+from nodeio.infrastructure.exceptions import ConfigurationError
 
 
 class TestStreamHandler(unittest.TestCase):

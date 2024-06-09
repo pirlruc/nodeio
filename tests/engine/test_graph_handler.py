@@ -9,7 +9,7 @@ from nodeio.engine.configuration import Graph, InputStream, Node
 from nodeio.engine.graph_handler import GraphHandler
 from nodeio.engine.node_factory import NodeFactory
 from nodeio.engine.stream import ContextStream
-from nodeio.nodeio.infrastructure.exceptions import ConfigurationError
+from nodeio.infrastructure.exceptions import ConfigurationError
 
 
 class CompleteNodeNoInputs(BaseNode):
