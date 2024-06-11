@@ -743,7 +743,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
         """Obtain process context for Python >= 3.11.
 
         :param graph: Processing graph defined by levels.
-        :type graph: dict[int, list[NodeHandler]]        
+        :type graph: dict[int, list[NodeHandler]]
         :param context: Graph processing context
         :type context: dict[KeyStr, ContextStream]
 
@@ -790,7 +790,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
         """Obtain process context for Python < 3.11.
 
         :param graph: Processing graph defined by levels.
-        :type graph: dict[int, list[NodeHandler]]        
+        :type graph: dict[int, list[NodeHandler]]
         :param context: Graph processing context
         :type context: dict[KeyStr, ContextStream]
 
