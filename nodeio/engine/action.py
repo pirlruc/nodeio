@@ -1,3 +1,12 @@
+"""The action module contains the list of actions that can be performed to the
+ values registered in the output streams.
+
+Classes:
+    Action - abstract class for all actions.
+    ListAction - select an index from a list.
+    DictAction - select a key from a dictionary.
+"""
+
 from abc import ABC
 from typing import Union
 

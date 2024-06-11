@@ -1,3 +1,14 @@
+"""The configuration module comprises models (json and classes) that are used
+ to create and define the objects used in the graph processing engine.
+
+Classes:
+    ListAction - configuration model for defining a ListAction.
+    DictAction - configuration model for defining a DictAction.
+    InputStream - configuration model for defining an input stream.
+    Node - configuration model for defining a node in the graph processing.
+    Graph - configuration model for defining a graph processing.
+"""
+
 from typing import Annotated, Literal, Optional, Union
 
 from pydantic import BaseModel, Field, model_validator

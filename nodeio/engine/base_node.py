@@ -1,3 +1,9 @@
+"""The base node module define the BaseNode abstract class to define all nodes.
+
+Classes:
+    BaseNode - abstract class to define all nodes.
+"""
+
 from abc import ABC, abstractmethod
 from typing import Any, Optional
 

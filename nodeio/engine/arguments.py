@@ -1,3 +1,11 @@
+"""The arguments module define classes that describe the inputs and outputs of
+ a function or method based on their annotations.
+
+Classes:
+    InputArg - describes an input argument.
+    OutputArg - describes an output argument.
+"""
+
 from inspect import Parameter
 from typing import Annotated, Optional
 
@@ -11,6 +19,14 @@ from nodeio.infrastructure.logger import NodeIOLogger
 
 
 def __transform_parameter_empty_to_none(value: object):
+    """Converts an empty parameter annotation to None.
+
+    :param value: Parameter annotation
+    :type value: object
+    :return: Returns None if the parameter annotation is empty, otherwise
+     returns the annotation itself.
+    :rtype: object
+    """
     if value is Parameter.empty:
         return None
     return value

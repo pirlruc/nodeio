@@ -1,3 +1,9 @@
+"""The logging module contains decorators for logging functions.
+
+Decorators:
+    log - registers the function signature and return value.
+"""
+
 from collections.abc import Callable
 from functools import wraps
 
@@ -11,8 +17,25 @@ def log(_functor: Callable = None, *, enabled: bool = True):
     """Prints the function signature and return value."""
 
     def decorator_log(functor):
+        """
+        The log decorator registers the function signature and return value
+         when called.
+        """
         @wraps(functor)
         def wrapper(*args, **kwargs):
+            """
+            This wrapper prints the function signature and return value. This 
+             decorator logs the function name, its arguments, and its return
+             value if logging is enabled.
+
+            Args:
+                functor (Callable): The function to wrap.
+                enabled (bool): Whether to enable or disable logging.
+                 Default is True.
+
+            Returns:
+                The result of the wrapped function.
+            """
             if enabled:
                 args_repr = [repr(a) for a in args]
                 kwargs_repr = [f"{k}={repr(v)}" for k, v in kwargs.items()]

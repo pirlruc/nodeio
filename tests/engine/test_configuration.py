@@ -229,12 +229,12 @@ class TestGraph(unittest.TestCase):
 
     def test_no_input_streams(self):
         with self.assertRaises(ConfigurationError):
-            Graph(nodes=[{"node": "a", "type": "node"}],
+            Graph(nodes=[{"node": "a", "output_stream": "a", "type": "node"}],
                   input_streams=[], output_streams=["c"])
 
     def test_no_output_streams(self):
         with self.assertRaises(ConfigurationError):
-            Graph(nodes=[{"node": "a", "type": "node"}],
+            Graph(nodes=[{"node": "a", "output_stream": "a", "type": "node"}],
                   input_streams=["b"], output_streams=[])
 
     def test_constructor(self):
