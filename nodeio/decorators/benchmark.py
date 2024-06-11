@@ -143,10 +143,10 @@ def benchmark(_functor: Callable = None, *, number_repeats: PositiveInt = 100):
 
     def decorator_benchmark(functor):
         """
-        The benchmark decorator is used to measure the time and memory 
-        consumption of a given function. It takes in a callable function as an
-        argument, repeats it the specified number of times (default is 100), 
-        and logs the average elapsed time and peak memory usage for each run.
+        The benchmark decorator is used to measure the time and memory
+         consumption of a given function. It takes in a callable function as an
+         argument, repeats it the specified number of times (default is 100),
+         and logs the average elapsed time and peak memory usage for each run.
         """
         @wraps(functor)
         def wrapper(*args, **kwargs):
@@ -158,7 +158,7 @@ def benchmark(_functor: Callable = None, *, number_repeats: PositiveInt = 100):
              result of that function. The decorator uses Python's built-in
              timer (`perf_counter`) to record the start and end times of the
              function's execution, and it also uses `tracemalloc` to obtain
-             the current and peak memory usage. It then logs the average 
+             the current and peak memory usage. It then logs the average
              elapsed time, average memory usage, and peak memory usage, along
              with the function name.
 

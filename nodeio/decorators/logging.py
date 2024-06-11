@@ -24,7 +24,7 @@ def log(_functor: Callable = None, *, enabled: bool = True):
         @wraps(functor)
         def wrapper(*args, **kwargs):
             """
-            This wrapper prints the function signature and return value. This 
+            This wrapper prints the function signature and return value. This
              decorator logs the function name, its arguments, and its return
              value if logging is enabled.
 
