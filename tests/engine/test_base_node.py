@@ -39,3 +39,8 @@ class TestBaseNode(unittest.TestCase):
         self.assertEqual(node.process(), 4)
         node.name = "test"
         self.assertEqual(node.name, 'test')
+
+    def test_complete_node_with_name(self):
+        node = CompleteNode(name="test")
+        self.assertEqual(node.name, "test")
+        self.assertEqual(node.process(), 4)

@@ -26,6 +26,14 @@ def add_list(values: list):
     return sum
 
 
+@nodeio.decorators.logging.log(enabled=False)
+def add_list_not_enabled(values: list):
+    sum = 0
+    for val in values:
+        sum += val
+    return sum
+
+
 class TestLoggingDecorators(unittest.TestCase):
     def test_debug_add_one(self):
         sum = add_one(1, value2=3)
@@ -41,4 +49,8 @@ class TestLoggingDecorators(unittest.TestCase):
 
     def test_debug_add_list(self):
         sum = add_list([1, 3, 4, 6])
+        self.assertEqual(sum, 14)
+
+    def test_debug_add_list_not_enabled(self):
+        sum = add_list_not_enabled([1, 3, 4, 6])
         self.assertEqual(sum, 14)

@@ -81,7 +81,7 @@ def timer_memory(functor: Callable):
 
 @validate_call
 def benchmark(_functor: Callable = None, *, number_repeats: PositiveInt = 100):
-    """Benchmarks the time and mmemory consumption of a function."""
+    """Benchmarks the time and memory consumption of a function."""
 
     def decorator_benchmark(functor):
         @wraps(functor)
@@ -106,7 +106,6 @@ def benchmark(_functor: Callable = None, *, number_repeats: PositiveInt = 100):
             logger.info("%s", "-" * 60)
             tracemalloc.stop()
             return result
-
         return wrapper
 
     if _functor is None:

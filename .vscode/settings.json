@@ -12,5 +12,5 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "ruff.configuration": "nodeio/ruff.toml"
+    "ruff.configuration": "ruff.toml"
 }

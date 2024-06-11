@@ -1,3 +1,4 @@
+import asyncio
 import unittest
 
 import networkx
@@ -183,4 +184,28 @@ class TestNodeHandler(unittest.TestCase):
         context["1"] = ContextStream(key="1", type=int)
         context["1"].register(new_value=1)
         context = handler.process(context)
+        self.assertEqual(context["2"].get(), 8)
+
+    def test_process_async_without_options(self):
+        stream_handler = StreamHandler(graph=networkx.DiGraph())
+        handler = NodeHandler(name="a", functor=CompleteNode().process)
+        handler.load(stream_handler=stream_handler,
+                     configuration=Node(node="a", output_stream="1"))
+        context = asyncio.run(handler.process_async())
+        self.assertEqual(context["1"].get(), 4)
+
+    def test_process_async_with_options(self):
+        stream_handler = StreamHandler(graph=networkx.DiGraph())
+        stream_handler.add_output_stream(
+            OutputStream(key="1"), origin="source")
+        handler = NodeHandler(
+            name="b", functor=CompleteNodeOptions().load(y=2, z=3).process)
+        handler.load(stream_handler=stream_handler, configuration=Node(
+            node="b", input_streams=[InputStream(arg="x", stream="1")],
+            output_stream="2")
+        )
+        context: dict[str, ContextStream] = {}
+        context["1"] = ContextStream(key="1", type=int)
+        context["1"].register(new_value=1)
+        context = asyncio.run(handler.process_async(context))
         self.assertEqual(context["2"].get(), 8)

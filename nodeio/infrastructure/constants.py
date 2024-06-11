@@ -5,4 +5,3 @@ DEFAULT_LOGGING_FORMATTER = logging.Formatter(
     "%(message)s"
 )
 DEFAULT_LOGGING_LEVEL = logging.DEBUG
-LOG_ENABLED = True

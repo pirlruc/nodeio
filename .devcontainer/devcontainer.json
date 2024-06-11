@@ -22,7 +22,7 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "pip install coverage && pip install pytest && pip install ruff && pip install flake8 && pip install pylint",
+	"postCreateCommand": "pip install coverage && pip install pytest && pip install ruff && pip install flake8 && pip install pylint && pip install docstr-coverage",
 
 	// Configure tool-specific properties.
 	"customizations": 

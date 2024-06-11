@@ -223,12 +223,16 @@ class TestGraph(unittest.TestCase):
             Graph(nodes=[{"node": "a"}], input_streams=[
                   "b"], output_streams=["  "])
 
-    def test_at_least_one_ocurrence(self):
+    def test_no_nodes(self):
         with self.assertRaises(ConfigurationError):
             Graph(nodes=[], input_streams=["b"], output_streams=["c"])
+
+    def test_no_input_streams(self):
         with self.assertRaises(ConfigurationError):
             Graph(nodes=[{"node": "a", "type": "node"}],
                   input_streams=[], output_streams=["c"])
+
+    def test_no_output_streams(self):
         with self.assertRaises(ConfigurationError):
             Graph(nodes=[{"node": "a", "type": "node"}],
                   input_streams=["b"], output_streams=[])
