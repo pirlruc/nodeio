@@ -1,3 +1,11 @@
+"""The factory module implements the factory design pattern for creating
+ random objects.
+
+Classes:
+    Factory - implementation of the factory design pattern to create
+     random objects.
+"""
+
 from collections.abc import Callable
 from typing import Any
 

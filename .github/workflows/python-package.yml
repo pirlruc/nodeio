@@ -52,8 +52,7 @@ jobs:
     - name: Documentation coverage
       run: |
         pip install docstr-coverage
-        docstr-coverage nodeio --fail-under=70
-# TODO: Review to increase coverage to above 90
+        docstr-coverage nodeio --fail-under=90
 
   test:
     runs-on: ${{ matrix.os }}

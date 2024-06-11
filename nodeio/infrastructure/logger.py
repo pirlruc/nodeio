@@ -1,3 +1,10 @@
+"""The logger module implements a singleton logger for logging purposes within
+ the graph processing engine.
+
+Classes:
+    NodeIOLogger - graph processing engine logger.
+"""
+
 import logging
 
 from pydantic import BaseModel, PrivateAttr

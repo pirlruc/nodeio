@@ -1,3 +1,11 @@
+"""The node factory module implements the factory design pattern for creating
+ node objects of a graph.
+
+Classes:
+    NodeFactory - implementation of the factory design pattern to create
+     BaseNode objects.
+"""
+
 from collections.abc import Callable
 from inspect import isabstract, isclass, signature
 
