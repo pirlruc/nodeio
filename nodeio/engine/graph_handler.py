@@ -789,13 +789,13 @@ class GraphHandler(BaseModel, validate_assignment=True):
                         :raises RuntimeError: Any error that can occur while
                          processing a node.
                         """
-                        error = task.exception()
-                        if error is not None:
-                            error_message = "Error processing node " \
-                                f"handler {node_handler.name} in " \
-                                f"graph: {error}"
-                            NodeIOLogger().logger.error(error_message)
-                            raise RuntimeError(error_message) from error
+                        # error = task.exception()
+                        # if error is not None:
+                        #     error_message = "Error processing node " \
+                        #         f"handler {node_handler.name} in " \
+                        #         f"graph: {error}"
+                        #     NodeIOLogger().logger.error(error_message)
+                        #     raise RuntimeError(error_message) from error
                         context.update(task.result())
 
                     task.add_done_callback(task_done_callback)

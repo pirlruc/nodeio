@@ -1,6 +1,10 @@
 import asyncio
 import os
+import sys
 import unittest
+
+if sys.version_info.major >= 3 and sys.version_info.minor >= 11:
+    from builtins import ExceptionGroup
 
 from typing_extensions import Self
 
@@ -418,5 +422,9 @@ class TestGraphHandler(unittest.TestCase):
         context_stream = ContextStream(key="0")
         context_stream.register(new_value=1)
         context["0"] = context_stream
-        with self.assertRaises(ValueError):
-            asyncio.run(handler.process_async(context=context))
+        if sys.version_info.major >= 3 and sys.version_info.minor >= 11:
+            with self.assertRaises(ExceptionGroup):
+                asyncio.run(handler.process_async(context=context))
+        else:
+            with self.assertRaises(ValueError):
+                asyncio.run(handler.process_async(context=context))
