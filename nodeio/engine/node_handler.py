@@ -1,3 +1,12 @@
+"""The node handler module contains the objects needed to manage nodes in
+ a graph.
+
+Classes:
+    NodeHandler - manages the interface with a callable function or method
+     via configuration using input and output streams. The class provides a
+     synchronous and an assynchronous interface to the callable.
+"""
+
 from inspect import isabstract, signature
 from typing import Callable, Optional
 

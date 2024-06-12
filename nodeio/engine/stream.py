@@ -1,3 +1,15 @@
+"""The stream module contains the types of streams that are used in the
+ graph processing.
+
+Classes:
+ - InputStream: establishes a connection between an output stream value or
+ filtered value and an argument for a function or method.
+ - OutputStream: identifies the output stream and the type of value that can
+ be registered in the stream.
+ - ContextStream: is a subclass of OutputStream that allows to store values
+ of the type defined in the OutputStream superclass.
+"""
+
 from copy import deepcopy
 from typing import Any, Optional
 

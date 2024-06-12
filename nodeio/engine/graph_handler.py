@@ -1,3 +1,14 @@
+"""The graph handler module contains the objects needed to manage a graph.
+
+Classes:
+    NodeType - defines the type of external nodes available.
+    GraphHandler - manages a graph network, its nodes and connections. The
+     class provides mechanisms to separate the graph into subgraphs, one that
+     depends on external nodes (main graph) and other that does not depend on
+     external nodes (secondary graph). Each graph can be executed using
+     synchronous or assynchronous methods.
+"""
+
 import asyncio
 import sys
 from enum import Enum
@@ -768,6 +779,16 @@ class GraphHandler(BaseModel, validate_assignment=True):
                     )
 
                     def task_done_callback(task: asyncio.Task):
+                        """Verifies if the asynchronous task has finished
+                         successfully. If not, propagates the error to the
+                         main processing.
+
+                        :param task: Asynchronous task to execute a node.
+                        :type task: asyncio.Task
+
+                        :raises RuntimeError: Any error that can occur while
+                         processing a node.
+                        """
                         error = task.exception()
                         if error is not None:
                             error_message = "Error processing node " \
@@ -815,6 +836,17 @@ class GraphHandler(BaseModel, validate_assignment=True):
                 )
 
                 def task_done_callback(task: asyncio.Task):
+                    """Verifies if the asynchronous task has finished
+                        successfully. If not, propagates the error to the
+                        main processing.
+
+                    :param task: Asynchronous task to execute a node.
+                    :type task: asyncio.Task
+
+                    :raises RuntimeError: Any error that can occur while
+                        processing a node.
+                    """
+
                     error = task.exception()
                     if error is not None:
                         error_message = "Error processing node handler " \
