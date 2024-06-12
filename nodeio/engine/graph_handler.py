@@ -779,23 +779,12 @@ class GraphHandler(BaseModel, validate_assignment=True):
                     )
 
                     def task_done_callback(task: asyncio.Task):
-                        """Verifies if the asynchronous task has finished
-                         successfully. If not, propagates the error to the
-                         main processing.
+                        """Updates the context after the task has finished
+                         successfully.
 
                         :param task: Asynchronous task to execute a node.
                         :type task: asyncio.Task
-
-                        :raises RuntimeError: Any error that can occur while
-                         processing a node.
                         """
-                        # error = task.exception()
-                        # if error is not None:
-                        #     error_message = "Error processing node " \
-                        #         f"handler {node_handler.name} in " \
-                        #         f"graph: {error}"
-                        #     NodeIOLogger().logger.error(error_message)
-                        #     raise RuntimeError(error_message) from error
                         context.update(task.result())
 
                     task.add_done_callback(task_done_callback)
@@ -837,8 +826,8 @@ class GraphHandler(BaseModel, validate_assignment=True):
 
                 def task_done_callback(task: asyncio.Task):
                     """Verifies if the asynchronous task has finished
-                        successfully. If not, propagates the error to the
-                        main processing.
+                        successfully to update context. If not, propagates
+                        the error to the main processing.
 
                     :param task: Asynchronous task to execute a node.
                     :type task: asyncio.Task
