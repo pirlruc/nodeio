@@ -3,9 +3,13 @@ import unittest
 import pydantic_core
 
 import nodeio.engine.configuration
-from nodeio.engine.action import DictAction, ListAction
-from nodeio.engine.arguments import InputArg
-from nodeio.engine.stream import ContextStream, InputStream, OutputStream
+from nodeio.engine.structures.action import DictAction, ListAction
+from nodeio.engine.structures.arguments import InputArg
+from nodeio.engine.structures.stream import (
+    ContextStream,
+    InputStream,
+    OutputStream,
+)
 
 
 class TestOutputStream(unittest.TestCase):

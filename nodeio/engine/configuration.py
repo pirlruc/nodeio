@@ -14,6 +14,8 @@ from typing import Annotated, Literal, Optional, Union
 from pydantic import BaseModel, Field, model_validator
 from typing_extensions import Self
 
+from nodeio.decorators.logging import log
+from nodeio.infrastructure.constants import LOGGING_ENABLED
 from nodeio.infrastructure.constrained_types import KeyStr
 from nodeio.infrastructure.exceptions import ConfigurationError
 from nodeio.infrastructure.logger import NodeIOLogger
@@ -59,6 +61,7 @@ class Node(BaseModel, validate_assignment=True):
     options: Optional[dict] = {}
 
     @model_validator(mode="after")
+    @log(enabled=LOGGING_ENABLED)
     def _check_configuration(self) -> Self:
         """Validates if configuration as at least one input stream or an output
          stream.
@@ -94,6 +97,7 @@ class Graph(BaseModel, validate_assignment=True):
     nodes: list[Annotated[Union[Node], Field(discriminator="type")]]
 
     @model_validator(mode="after")
+    @log(enabled=LOGGING_ENABLED)
     def _check_configuration(self) -> Self:
         """Validates if configuration as at least one ocurrence of each
         property.

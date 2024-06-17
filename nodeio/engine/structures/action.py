@@ -15,6 +15,7 @@ from typing_extensions import Self
 
 import nodeio.engine.configuration
 from nodeio.decorators.logging import log
+from nodeio.infrastructure.constants import LOGGING_ENABLED
 from nodeio.infrastructure.constrained_types import KeyStr
 from nodeio.infrastructure.logger import NodeIOLogger
 
@@ -36,7 +37,7 @@ class Action(BaseModel, ABC, validate_assignment=True):
 
     @staticmethod
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def from_configuration(
         configuration: Union[
             nodeio.engine.configuration.ListAction,
@@ -75,7 +76,7 @@ class ListAction(Action):
 
     @staticmethod
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def from_configuration(
         configuration: nodeio.engine.configuration.ListAction,
     ) -> Self:
@@ -98,7 +99,7 @@ class DictAction(Action):
 
     @staticmethod
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def from_configuration(
         configuration: nodeio.engine.configuration.DictAction,
     ) -> Self:

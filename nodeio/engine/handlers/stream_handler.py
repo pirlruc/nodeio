@@ -10,7 +10,8 @@ from pydantic import BaseModel, Field, PrivateAttr, validate_call
 from typing_extensions import Self
 
 from nodeio.decorators.logging import log
-from nodeio.engine.stream import OutputStream
+from nodeio.engine.structures.stream import OutputStream
+from nodeio.infrastructure.constants import LOGGING_ENABLED
 from nodeio.infrastructure.constrained_types import KeyStr
 from nodeio.infrastructure.exceptions import ConfigurationError
 from nodeio.infrastructure.logger import NodeIOLogger
@@ -42,7 +43,7 @@ class StreamHandler(
         return len(self.__output)
 
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def add_output_stream(self, stream: OutputStream, origin: KeyStr) -> Self:
         """Add output stream to stream handler.
 
@@ -67,7 +68,7 @@ class StreamHandler(
         return self
 
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def get_output_stream(self, key: KeyStr) -> OutputStream:
         """Obtain output stream registered.
 
@@ -87,7 +88,7 @@ class StreamHandler(
         return self.__output[key].stream
 
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def register_connection(self, key: KeyStr, ending: KeyStr) -> Self:
         """Register a connection between an input and output stream.
 
@@ -122,7 +123,7 @@ class StreamHandler(
         self.__output[key].connected = True
         return self
 
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def has_unconnected_streams(self) -> bool:
         """Checks if there are any unconnected output streams.
 
@@ -134,7 +135,7 @@ class StreamHandler(
             stream.connected is False for _, stream in self.__output.items()
         )
 
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def get_unconnected_stream_keys(self) -> list[KeyStr]:
         """Obtain unconnected stream keys.
 

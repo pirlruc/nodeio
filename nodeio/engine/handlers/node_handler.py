@@ -14,10 +14,15 @@ from pydantic import BaseModel, Field, PrivateAttr, validate_call
 from typing_extensions import Self
 
 from nodeio.decorators.logging import log
-from nodeio.engine.arguments import InputArg, OutputArg
 from nodeio.engine.configuration import Node
-from nodeio.engine.stream import ContextStream, InputStream, OutputStream
-from nodeio.engine.stream_handler import StreamHandler
+from nodeio.engine.handlers.stream_handler import StreamHandler
+from nodeio.engine.structures.arguments import InputArg, OutputArg
+from nodeio.engine.structures.stream import (
+    ContextStream,
+    InputStream,
+    OutputStream,
+)
+from nodeio.infrastructure.constants import LOGGING_ENABLED
 from nodeio.infrastructure.constrained_types import KeyStr
 from nodeio.infrastructure.exceptions import ConfigurationError
 from nodeio.infrastructure.logger import NodeIOLogger
@@ -52,7 +57,7 @@ class NodeHandler(BaseModel, validate_assignment=True):
         return len(self.__input_streams)
 
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def __init__(self, name: KeyStr, functor: Callable, **data) -> Self:
         """Creates a NodeHandler instance base on a name identifier and a
          functor.
@@ -84,82 +89,7 @@ class NodeHandler(BaseModel, validate_assignment=True):
         )
 
     @validate_call
-    @log
-    def load(self, stream_handler: StreamHandler, configuration: Node) -> Self:
-        """Loads the configuration for the node processing handler.
-
-        :param stream_handler: Handler for input and output streams.
-        :type stream_handler: StreamHandler
-        :param configuration: Configuration for the node.
-        :type configuration: Node
-
-        :raises RuntimeError: If node name identifier (configuration) does not
-         match with the node handler name identifier (self).
-        :raises ConfigurationError: If functor has mandatory inputs but there
-         are no input streams registered in the handler.
-        :raises ConfigurationError: If input argument associated with an input
-         stream does not exist in the functor registered in the handler.
-        :raises ConfigurationError: If there is no output stream associated
-         with an input stream key.
-
-        :return: Updated node handler instance.
-        :rtype: Self
-        """
-        if self.name != configuration.node:
-            error_message = f"Node identifier {configuration.node} does not " \
-                f"match handler identifier {self.name}"
-            NodeIOLogger().logger.error(error_message)
-            raise RuntimeError(error_message)
-
-        if (
-            len(configuration.input_streams) == 0
-            and self.__has_mandatory_inputs()
-        ):
-            error_message = "Functor has mandatory input arguments for node " \
-                f"{self.name}. Please review configuration to add input " \
-                "streams"
-            NodeIOLogger().logger.error(error_message)
-            raise ConfigurationError(error_message)
-
-        for input_stream_config in configuration.input_streams:
-            if input_stream_config.arg not in self.__inputs.keys():
-                error_message = f"Input arg {input_stream_config.arg} " \
-                    f"provided for stream {input_stream_config.stream} does " \
-                    "not exist in functor. Please review configuration"
-                NodeIOLogger().logger.error(error_message)
-                raise ConfigurationError(error_message)
-
-            try:
-                output_stream = stream_handler.get_output_stream(
-                    key=input_stream_config.stream
-                )
-            except KeyError as error:
-                error_message = f"Input stream {input_stream_config.stream} " \
-                    f"defined for node {self.name} does not have an output " \
-                    "stream associated. Please review configuration"
-                NodeIOLogger().logger.error(error_message)
-                raise ConfigurationError(error_message) from error
-
-            input_stream: InputStream = InputStream.from_configuration(
-                configuration=input_stream_config
-            )
-            input_stream.stream = output_stream
-            input_stream.arg = self.__inputs[input_stream_config.arg]
-            self.__input_streams.append(input_stream)
-            stream_handler.register_connection(
-                key=input_stream_config.stream, ending=self.name
-            )
-
-        if configuration.output_stream is not None:
-            self.__output_stream = OutputStream(
-                key=configuration.output_stream, type=self.__output.type
-            )
-            stream_handler.add_output_stream(
-                stream=self.__output_stream, origin=self.name
-            )
-        return self
-
-    @validate_call
+    @log(enabled=LOGGING_ENABLED)
     def process(
         self, context: Optional[dict[KeyStr, ContextStream]] = None
     ) -> dict[KeyStr, ContextStream]:
@@ -189,6 +119,8 @@ class NodeHandler(BaseModel, validate_assignment=True):
             context[context_stream.key] = context_stream
         return context
 
+    @validate_call
+    @log(enabled=LOGGING_ENABLED)
     async def process_async(
         self, context: Optional[dict[KeyStr, ContextStream]] = None
     ) -> dict[KeyStr, ContextStream]:
@@ -204,7 +136,9 @@ class NodeHandler(BaseModel, validate_assignment=True):
             context = {}
         return self.process(context=context)
 
-    @log
+    # TODO: Add multiprocess call
+
+    @log(enabled=LOGGING_ENABLED)
     def has_output(self) -> bool:
         """Checks if there is an output annotation for the functor.
 
@@ -214,7 +148,7 @@ class NodeHandler(BaseModel, validate_assignment=True):
         """
         return self.__output.type is not None
 
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def has_output_stream(self) -> bool:
         """Checks if there is an output stream registered in handler.
 
@@ -224,7 +158,7 @@ class NodeHandler(BaseModel, validate_assignment=True):
         """
         return self.__output_stream is not None
 
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def __has_mandatory_inputs(self) -> bool:
         """Checks if there are mandatory inputs for the functor in the handler.
 
@@ -233,3 +167,79 @@ class NodeHandler(BaseModel, validate_assignment=True):
         :rtype: bool
         """
         return any(input.default is None for _, input in self.__inputs.items())
+
+    @staticmethod
+    @validate_call
+    @log(enabled=LOGGING_ENABLED)
+    def from_configuration(
+            functor: Callable,
+            stream_handler: StreamHandler,
+            configuration: Node) -> Self:
+        """Creates a node processing handler from the node configuration.
+
+        :param functor: Processing functor
+        :type functor: Callable
+        :param stream_handler: Handler for input and output streams.
+        :type stream_handler: StreamHandler
+        :param configuration: Configuration for the node.
+        :type configuration: Node
+
+        :raises ConfigurationError: If functor has mandatory inputs but there
+         are no input streams registered in the handler.
+        :raises ConfigurationError: If input argument associated with an input
+         stream does not exist in the functor registered in the handler.
+        :raises ConfigurationError: If there is no output stream associated
+         with an input stream key.
+
+        :return: Updated node handler instance.
+        :rtype: Self
+        """
+        handler = NodeHandler(name=configuration.node, functor=functor)
+
+        if (
+            len(configuration.input_streams) == 0
+            and handler.__has_mandatory_inputs()
+        ):
+            error_message = "Functor has mandatory input arguments for node " \
+                f"{handler.name}. Please review configuration to add input " \
+                "streams"
+            NodeIOLogger().logger.error(error_message)
+            raise ConfigurationError(error_message)
+
+        for input_stream_config in configuration.input_streams:
+            if input_stream_config.arg not in handler.__inputs.keys():
+                error_message = f"Input arg {input_stream_config.arg} " \
+                    f"provided for stream {input_stream_config.stream} does " \
+                    "not exist in functor. Please review configuration"
+                NodeIOLogger().logger.error(error_message)
+                raise ConfigurationError(error_message)
+
+            try:
+                output_stream = stream_handler.get_output_stream(
+                    key=input_stream_config.stream
+                )
+            except KeyError as error:
+                error_message = f"Input stream {input_stream_config.stream} " \
+                    f"defined for node {handler.name} does not have an " \
+                    "output stream associated. Please review configuration"
+                NodeIOLogger().logger.error(error_message)
+                raise ConfigurationError(error_message) from error
+
+            input_stream: InputStream = InputStream.from_configuration(
+                configuration=input_stream_config
+            )
+            input_stream.stream = output_stream
+            input_stream.arg = handler.__inputs[input_stream_config.arg]
+            handler.__input_streams.append(input_stream)
+            stream_handler.register_connection(
+                key=input_stream_config.stream, ending=handler.name
+            )
+
+        if configuration.output_stream is not None:
+            handler.__output_stream = OutputStream(
+                key=configuration.output_stream, type=handler.__output.type
+            )
+            stream_handler.add_output_stream(
+                stream=handler.__output_stream, origin=handler.name
+            )
+        return handler

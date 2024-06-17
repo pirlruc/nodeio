@@ -3,7 +3,7 @@ import unittest
 import pydantic_core
 
 import nodeio.engine.configuration
-from nodeio.engine.action import Action, DictAction, ListAction
+from nodeio.engine.structures.action import Action, DictAction, ListAction
 
 
 class ActionA(Action):

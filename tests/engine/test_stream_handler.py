@@ -3,8 +3,8 @@ import unittest
 import networkx
 import pydantic_core
 
-from nodeio.engine.stream import OutputStream
-from nodeio.engine.stream_handler import StreamHandler
+from nodeio.engine.handlers.stream_handler import StreamHandler
+from nodeio.engine.structures.stream import OutputStream
 from nodeio.infrastructure.exceptions import ConfigurationError
 
 

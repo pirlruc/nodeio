@@ -13,6 +13,7 @@ from pydantic import BaseModel, PrivateAttr, validate_call
 from typing_extensions import Self
 
 from nodeio.decorators.logging import log
+from nodeio.infrastructure.constants import LOGGING_ENABLED
 from nodeio.infrastructure.constrained_types import KeyStr
 from nodeio.infrastructure.logger import NodeIOLogger
 
@@ -32,7 +33,7 @@ class Factory(BaseModel, validate_assignment=True):
         return len(self.__callbacks)
 
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def register(self, key: KeyStr, functor: Callable) -> Self:
         """Registers a functor with a given key.
 
@@ -54,7 +55,7 @@ class Factory(BaseModel, validate_assignment=True):
         return self
 
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def unregister(self, key: KeyStr) -> Self:
         """Unregisters the functor associated with a given key.
 
@@ -74,7 +75,7 @@ class Factory(BaseModel, validate_assignment=True):
         return self
 
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def create(self, key: KeyStr, *args, **kwargs) -> Any:
         """Returns the result of the functor registered with the provided key.
 

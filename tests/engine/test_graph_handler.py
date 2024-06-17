@@ -12,7 +12,7 @@ from nodeio.engine.base_node import BaseNode
 from nodeio.engine.configuration import Graph, InputStream, Node
 from nodeio.engine.graph_handler import GraphHandler
 from nodeio.engine.node_factory import NodeFactory
-from nodeio.engine.stream import ContextStream
+from nodeio.engine.structures.stream import ContextStream
 from nodeio.infrastructure.exceptions import ConfigurationError
 
 
@@ -82,7 +82,7 @@ class TestGraphHandler(unittest.TestCase):
         self.assertEqual(handler.number_input_streams, 0)
         self.assertEqual(handler.number_nodes, 0)
         self.assertEqual(handler.number_main_processing_graph_nodes, 0)
-        self.assertEqual(handler.number_not_main_processing_graph_nodes, 0)
+        self.assertEqual(handler.number_secondary_processing_graph_nodes, 0)
 
     def test_duplicated_node(self):
         factory = NodeFactory()
@@ -147,7 +147,7 @@ class TestGraphHandler(unittest.TestCase):
         self.assertEqual(handler.number_input_streams, 1)
         self.assertEqual(handler.number_nodes, 3)
         self.assertEqual(handler.number_main_processing_graph_nodes, 1)
-        self.assertEqual(handler.number_not_main_processing_graph_nodes, 0)
+        self.assertEqual(handler.number_secondary_processing_graph_nodes, 0)
         handler.write_graph(filename="test.png")
         self.assertTrue(os.path.isfile("test.png"))
         os.remove("test.png")
@@ -165,7 +165,7 @@ class TestGraphHandler(unittest.TestCase):
         self.assertEqual(handler.number_input_streams, 1)
         self.assertEqual(handler.number_nodes, 3)
         self.assertEqual(handler.number_main_processing_graph_nodes, 1)
-        self.assertEqual(handler.number_not_main_processing_graph_nodes, 0)
+        self.assertEqual(handler.number_secondary_processing_graph_nodes, 0)
 
     def test_complex_graph(self):
         factory = NodeFactory()
@@ -196,7 +196,7 @@ class TestGraphHandler(unittest.TestCase):
         self.assertEqual(handler.number_input_streams, 1)
         self.assertEqual(handler.number_nodes, 10)
         self.assertEqual(handler.number_main_processing_graph_nodes, 6)
-        self.assertEqual(handler.number_not_main_processing_graph_nodes, 2)
+        self.assertEqual(handler.number_secondary_processing_graph_nodes, 2)
         handler.write_graph(filename="complex_graph.png")
         self.assertTrue(os.path.isfile("complex_graph.png"))
         os.remove("complex_graph.png")
@@ -239,7 +239,7 @@ class TestGraphHandler(unittest.TestCase):
         self.assertEqual(handler.number_input_streams, 1)
         self.assertEqual(handler.number_nodes, 10)
         self.assertEqual(handler.number_main_processing_graph_nodes, 6)
-        self.assertEqual(handler.number_not_main_processing_graph_nodes, 2)
+        self.assertEqual(handler.number_secondary_processing_graph_nodes, 2)
         with self.assertRaises(RuntimeError):
             handler.process()
 
@@ -261,7 +261,7 @@ class TestGraphHandler(unittest.TestCase):
         self.assertEqual(handler.number_input_streams, 1)
         self.assertEqual(handler.number_nodes, 4)
         self.assertEqual(handler.number_main_processing_graph_nodes, 2)
-        self.assertEqual(handler.number_not_main_processing_graph_nodes, 0)
+        self.assertEqual(handler.number_secondary_processing_graph_nodes, 0)
         handler.open()
         with self. assertRaises(KeyError):
             handler.process()
@@ -312,7 +312,7 @@ class TestGraphHandler(unittest.TestCase):
         self.assertEqual(handler.number_input_streams, 1)
         self.assertEqual(handler.number_nodes, 4)
         self.assertEqual(handler.number_main_processing_graph_nodes, 2)
-        self.assertEqual(handler.number_not_main_processing_graph_nodes, 0)
+        self.assertEqual(handler.number_secondary_processing_graph_nodes, 0)
         context = {}
         context_stream = ContextStream(key="0")
         context_stream.register(new_value=1)
@@ -349,7 +349,7 @@ class TestGraphHandler(unittest.TestCase):
         self.assertEqual(handler.number_input_streams, 1)
         self.assertEqual(handler.number_nodes, 10)
         self.assertEqual(handler.number_main_processing_graph_nodes, 6)
-        self.assertEqual(handler.number_not_main_processing_graph_nodes, 2)
+        self.assertEqual(handler.number_secondary_processing_graph_nodes, 2)
         with self.assertRaises(RuntimeError):
             asyncio.run(handler.process_async())
 
@@ -382,7 +382,7 @@ class TestGraphHandler(unittest.TestCase):
         self.assertEqual(handler.number_input_streams, 1)
         self.assertEqual(handler.number_nodes, 10)
         self.assertEqual(handler.number_main_processing_graph_nodes, 6)
-        self.assertEqual(handler.number_not_main_processing_graph_nodes, 2)
+        self.assertEqual(handler.number_secondary_processing_graph_nodes, 2)
         handler.write_graph(filename="complex_graph.png")
         self.assertTrue(os.path.isfile("complex_graph.png"))
         os.remove("complex_graph.png")
@@ -414,7 +414,7 @@ class TestGraphHandler(unittest.TestCase):
         self.assertEqual(handler.number_input_streams, 1)
         self.assertEqual(handler.number_nodes, 4)
         self.assertEqual(handler.number_main_processing_graph_nodes, 2)
-        self.assertEqual(handler.number_not_main_processing_graph_nodes, 0)
+        self.assertEqual(handler.number_secondary_processing_graph_nodes, 0)
 
         asyncio.run(handler.open_async())
 

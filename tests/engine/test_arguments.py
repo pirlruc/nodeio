@@ -3,7 +3,7 @@ from inspect import Parameter, signature
 
 import pydantic_core
 
-from nodeio.engine.arguments import InputArg, OutputArg
+from nodeio.engine.structures.arguments import InputArg, OutputArg
 
 
 def no_input_no_output():

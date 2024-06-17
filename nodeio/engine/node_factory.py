@@ -14,6 +14,7 @@ from typing_extensions import Self
 
 from nodeio.decorators.logging import log
 from nodeio.engine.base_node import BaseNode
+from nodeio.infrastructure.constants import LOGGING_ENABLED
 from nodeio.infrastructure.constrained_types import KeyStr
 from nodeio.infrastructure.logger import NodeIOLogger
 from nodeio.patterns.factory import Factory
@@ -23,7 +24,7 @@ class NodeFactory(Factory):
     """Factory for creating processing nodes."""
 
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def register(self, key: KeyStr, functor: Callable) -> Self:
         """Registers a node creation functor with a given key.
 
@@ -56,7 +57,7 @@ class NodeFactory(Factory):
         return self
 
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def create(self, key: KeyStr, *args, **kwargs) -> BaseNode:
         """Returns a node created by the functor registered with the provided
         key.

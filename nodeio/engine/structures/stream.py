@@ -18,8 +18,9 @@ from typing_extensions import Self
 
 import nodeio.engine.configuration
 from nodeio.decorators.logging import log
-from nodeio.engine.action import Action
-from nodeio.engine.arguments import InputArg
+from nodeio.engine.structures.action import Action
+from nodeio.engine.structures.arguments import InputArg
+from nodeio.infrastructure.constants import LOGGING_ENABLED
 from nodeio.infrastructure.constrained_types import KeyStr
 from nodeio.infrastructure.logger import NodeIOLogger
 
@@ -40,6 +41,7 @@ class InputStream(BaseModel, validate_assignment=True):
     actions: Optional[list[Action]] = []
 
     @model_validator(mode="after")
+    @log(enabled=LOGGING_ENABLED)
     def _check_data_type_fields(self) -> Self:
         """Completes information regarding the input stream data and checks if
         data types are coherent.
@@ -70,7 +72,7 @@ class InputStream(BaseModel, validate_assignment=True):
 
     @staticmethod
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def from_configuration(
         configuration: nodeio.engine.configuration.InputStream,
     ) -> Self:
@@ -98,7 +100,7 @@ class ContextStream(OutputStream):
     __value: Any = PrivateAttr(default=None)
 
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def register(self, new_value: Any) -> Self:
         """Registers a new value in the output stream.
 
@@ -124,7 +126,7 @@ class ContextStream(OutputStream):
         return self
 
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def get(self, actions: Optional[list[Action]] = None) -> Any:
         """Obtains the value registered in the output stream. The value
         returned is a copy of the original value.
@@ -153,7 +155,7 @@ class ContextStream(OutputStream):
             result = result[action.value]
         return deepcopy(result)
 
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def has_value(self) -> bool:
         """Check if there is a value registered for the stream.
 
@@ -165,7 +167,7 @@ class ContextStream(OutputStream):
 
     @staticmethod
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def from_output_stream(stream: OutputStream) -> Self:
         """Create a ContextStream instance from output stream.
 
