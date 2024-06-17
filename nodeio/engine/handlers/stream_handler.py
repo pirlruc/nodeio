@@ -49,8 +49,8 @@ class StreamHandler(
 
         :param stream: Output stream to add.
         :type stream: OutputStream
-        :param stream: Key of the node that originates the output stream.
-        :type stream: KeyStr
+        :param origin: Key of the node that originates the output stream.
+        :type origin: KeyStr
 
         :raises KeyError: Output stream already exists.
 
@@ -95,8 +95,8 @@ class StreamHandler(
         :param key: Key of the output stream to register the connection with
         an input stream.
         :type key: KeyStr
-        :param key: Key of the node that is registering the connection
-        :type key: KeyStr
+        :param ending: Key of the node that is registering the connection
+        :type ending: KeyStr
 
         :raises KeyError: Output stream key does not exist.
         :raises ConfigurationError: Origin and ending node for stream is

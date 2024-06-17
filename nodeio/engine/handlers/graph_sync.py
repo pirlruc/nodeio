@@ -1,3 +1,10 @@
+"""The graph sync module contains auxiliary functions for synchronous
+ graph processing.
+
+Functions:
+    process_graph - processes the graph synchronously.
+"""
+
 from typing import Optional
 
 from pydantic import validate_call

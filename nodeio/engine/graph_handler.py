@@ -17,23 +17,21 @@ from networkx import (
     bfs_layers,
     draw_networkx,
     get_node_attributes,
-    isolates,
 )
 from pydantic import BaseModel, PrivateAttr, validate_call
 from typing_extensions import Self
 
 import nodeio.engine.handlers.graph_async
 import nodeio.engine.handlers.graph_sync
+import nodeio.engine.handlers.graph_utils
 from nodeio.decorators.logging import log
-from nodeio.engine.base_node import BaseNode
-from nodeio.engine.configuration import Graph, Node
+from nodeio.engine.configuration import Graph
 from nodeio.engine.handlers.node_handler import NodeHandler
 from nodeio.engine.handlers.stream_handler import StreamHandler
 from nodeio.engine.node_factory import NodeFactory
 from nodeio.engine.structures.stream import ContextStream, OutputStream
 from nodeio.infrastructure.constants import LOGGING_ENABLED
 from nodeio.infrastructure.constrained_types import KeyStr
-from nodeio.infrastructure.exceptions import ConfigurationError
 from nodeio.infrastructure.logger import NodeIOLogger
 
 
@@ -129,7 +127,6 @@ class GraphHandler(BaseModel, validate_assignment=True):
         :return: Updated graph instance
         :rtype: Self
         """
-        self.__graph.clear()
         self.__create_graph(factory=factory, configuration=configuration)
 
         node_handlers = get_node_attributes(self.__graph, name="handler")
@@ -142,6 +139,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
             )
         return self
 
+    # TODO: Merge open and open_async methods
     @log(enabled=LOGGING_ENABLED)
     def open(self):
         """Execute nodes independent from the main processing graph
@@ -168,6 +166,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
                 graph=self.__secondary_processing_graph
             )
 
+    # TODO: Merge process and process_async methods
     @validate_call
     @log(enabled=LOGGING_ENABLED)
     def process(
@@ -272,172 +271,45 @@ class GraphHandler(BaseModel, validate_assignment=True):
         :param configuration: Graph configuration
         :type configuration: Graph
         """
+        self.__graph.clear()
         stream_handler = StreamHandler(graph=self.__graph)
         node_keys = set()
 
         # Add nodes to register main input and main output streams
-        node_keys = self.__add_node(
+        node_keys = nodeio.engine.handlers.graph_utils.add_node(
+            graph=self.__graph,
             node_keys=node_keys,
             node_key=_NodeType.EXTERNAL_SOURCE_NODE.name.lower(),
         )
-        node_keys = self.__add_node(
+        node_keys = nodeio.engine.handlers.graph_utils.add_node(
+            graph=self.__graph,
             node_keys=node_keys,
             node_key=_NodeType.EXTERNAL_SINK_NODE.name.lower(),
         )
 
-        self.__register_input_streams(
-            stream_handler=stream_handler,
-            configuration=configuration.input_streams,
-        )
-        node_keys = self.__register_nodes(
+        self.__input_streams = \
+            nodeio.engine.handlers.graph_utils.register_input_streams(
+                origin=_NodeType.EXTERNAL_SOURCE_NODE.name.lower(),
+                stream_handler=stream_handler,
+                configuration=configuration.input_streams,
+            )
+        node_keys = nodeio.engine.handlers.graph_utils.register_node_handlers(
+            graph=self.__graph,
             node_keys=node_keys,
             factory=factory,
             stream_handler=stream_handler,
             configuration=configuration.nodes,
         )
-        self.__register_output_streams(
-            stream_handler=stream_handler,
-            configuration=configuration.output_streams,
-        )
-        self.__validate_nodes_and_streams(stream_handler=stream_handler)
-
-    # TODO: Remove validate_call
-    @validate_call
-    @log(enabled=LOGGING_ENABLED)
-    def __add_node(
-        self,
-        node_keys: set[KeyStr],
-        node_key: KeyStr,
-        handler: Optional[NodeHandler] = None,
-    ) -> set[KeyStr]:
-        """Add node to graph.
-
-        :param node_keys: Set of node keys already in graph.
-        :type node_keys: set[KeyStr]
-        :param node_key: Node key to be inserted in the graph.
-        :type node_key: KeyStr
-        :param handler: Node handler for processing, defaults to None
-        :type handler: Optional[NodeHandler], optional
-
-        :raises ConfigurationError: Node key being inserted already exists
-         in graph.
-
-        :return: Updated set of node keys in graph
-        :rtype: set[KeyStr]
-        """
-        if node_key in node_keys:
-            error_message = f"Node with identifier {node_key} already " \
-                "exists. Please review configuration"
-            NodeIOLogger().logger.error(error_message)
-            raise ConfigurationError(error_message)
-        self.__graph.add_node(node_for_adding=node_key, handler=handler)
-        node_keys.add(node_key)
-        return node_keys
-
-    # TODO: Remove validate_call
-    @validate_call
-    @log(enabled=LOGGING_ENABLED)
-    def __register_input_streams(
-        self, stream_handler: StreamHandler, configuration: list[KeyStr]
-    ):
-        """Register input streams in stream handler.
-
-        :param stream_handler: Handler for input and output streams.
-        :type stream_handler: StreamHandler
-        :param configuration: Main input streams configuration.
-        :type configuration: list[KeyStr]
-        """
-        # Main input streams are considered output streams in the framework
-        # Therefore, they are registered in the stream handler as output
-        # streams
-        for input_stream_key in configuration:
-            input_stream = OutputStream(key=input_stream_key)
-            self.__input_streams.append(input_stream)
-            stream_handler.add_output_stream(
-                stream=input_stream,
-                origin=_NodeType.EXTERNAL_SOURCE_NODE.name.lower(),
-            )
-
-    # TODO: Remove validate_call
-    @validate_call
-    @log(enabled=LOGGING_ENABLED)
-    def __register_nodes(
-        self,
-        node_keys: set,
-        factory: NodeFactory,
-        stream_handler: StreamHandler,
-        configuration: list[Node],
-    ) -> set:
-        """Obtain node handlers from configuration and register them in the
-        graph.
-
-        :param node_keys: Set of node keys already in graph.
-        :type node_keys: set
-        :param factory: Node factory with the generation functors registered.
-        :type factory: NodeFactory
-        :param stream_handler: Handler for input and output streams.
-        :type stream_handler: StreamHandler
-        :param configuration: List of configurations for nodes.
-        :type configuration: list[Node]
-
-        :return: Updated set of node keys in graph
-        :rtype: set
-        """
-        # The nodes will insert input and output streams through the stream
-        # handler
-        for node_config in configuration:
-            input_context = {}
-            for key, value in node_config.options.items():
-                input_context[key] = value
-            node: BaseNode = factory.create(
-                key=node_config.type, **input_context
-            )
-            handler: NodeHandler = NodeHandler.from_configuration(
-                functor=node.process,
-                stream_handler=stream_handler,
-                configuration=node_config
-            )
-            node_keys = self.__add_node(
-                node_keys=node_keys, node_key=handler.name, handler=handler
-            )
-        return node_keys
-
-    # TODO: Remove validate_call
-    @validate_call
-    @log(enabled=LOGGING_ENABLED)
-    def __register_output_streams(
-        self, stream_handler: StreamHandler, configuration: list[KeyStr]
-    ):
-        """Register output streams in stream handler.
-
-        :param stream_handler: Handler for input and output streams.
-        :type stream_handler: StreamHandler
-        :param configuration: Main output streams configuration.
-        :type configuration: list[KeyStr]
-
-        :raises ConfigurationError: If the main output stream does not have a
-         connection with a node.
-        """
-        # Main output streams are considered input streams in the framework
-        # Therefore, they are not registered in the stream handler.
-        # They should register connections with existent output streams
-        for output_stream_key in configuration:
-            try:
-                output_stream = stream_handler.get_output_stream(
-                    key=output_stream_key
-                )
-            except KeyError as error:
-                error_message = f"Main output stream {output_stream_key} " \
-                    "does not have a registered connection with a node. " \
-                    "Please review configuration"
-                NodeIOLogger().logger.error(error_message)
-                raise ConfigurationError(error_message) from error
-
-            self.__output_streams.append(output_stream)
-            stream_handler.register_connection(
-                key=output_stream_key,
+        self.__output_streams = \
+            nodeio.engine.handlers.graph_utils.register_output_streams(
                 ending=_NodeType.EXTERNAL_SINK_NODE.name.lower(),
+                stream_handler=stream_handler,
+                configuration=configuration.output_streams,
             )
+        nodeio.engine.handlers.graph_utils.validate_nodes_and_streams(
+            graph=self.__graph,
+            stream_handler=stream_handler
+        )
 
     # TODO: Remove validate_call
     @validate_call
@@ -456,53 +328,11 @@ class GraphHandler(BaseModel, validate_assignment=True):
         """
         source_nodes = set()
         source_nodes.add(_NodeType.EXTERNAL_SOURCE_NODE.name.lower())
-        return self.__create_processing_graph(
-            source_nodes=source_nodes, node_handlers=node_handlers
+        return nodeio.engine.handlers.graph_utils.create_processing_graph(
+            graph=self.__graph,
+            source_nodes=source_nodes,
+            node_handlers=node_handlers
         )
-
-    # TODO: Remove validate_call
-    @validate_call
-    @log(enabled=LOGGING_ENABLED)
-    def __create_processing_graph(
-        self,
-        source_nodes: set[KeyStr],
-        node_handlers: dict[KeyStr, Optional[NodeHandler]],
-    ) -> dict[int, list[NodeHandler]]:
-        """Obtain processing graph with node handlers removing external source
-        and sink nodes.
-
-        :param node_handlers: Node handlers.
-        :type node_handlers: dict[KeyStr, Optional[NodeHandler]]
-
-        :return: Processing graph defined by levels.
-        :rtype: dict[int, list[NodeHandler]]
-        """
-        processing_graph = {}
-        level = 0
-        pending_nodes = source_nodes
-        while len(pending_nodes) != 0:
-            increase_level = False
-            level_nodes = []
-            iterator_nodes = pending_nodes.copy()
-            for node_key in iterator_nodes:
-                prev_nodes = set(self.__graph.predecessors(node_key))
-                next_nodes = set(self.__graph.successors(node_key))
-                if any(
-                    prev_node in iterator_nodes for prev_node in prev_nodes
-                ):
-                    continue
-
-                pending_nodes.remove(node_key)
-                pending_nodes.update(next_nodes)
-                if node_handlers[node_key] is not None:
-                    increase_level = True
-                    level_nodes.append(node_handlers[node_key])
-
-            if increase_level:
-                processing_graph[level] = level_nodes
-                level += 1
-
-        return processing_graph
 
     # TODO: Remove validate_call
     @validate_call
@@ -522,14 +352,21 @@ class GraphHandler(BaseModel, validate_assignment=True):
         """
         processing_graph = {}
         secondary_nodes: set = (
-            self.__obtain_nodes_in_secondary_processing_graph()
+            self.__get_nodes_in_secondary_processing_graph()
         )
         if len(secondary_nodes) != 0:
-            source_nodes = self.__obtain_source_nodes(nodes=secondary_nodes)
+            source_nodes: set = \
+                nodeio.engine.handlers.graph_utils.get_source_nodes(
+                    graph=self.__graph,
+                    nodes=secondary_nodes
+                )
             source_nodes.add(_NodeType.EXTERNAL_SOURCE_NODE.name.lower())
-            layers: dict = self.__create_processing_graph(
-                source_nodes=source_nodes, node_handlers=node_handlers
-            )
+            layers: dict = \
+                nodeio.engine.handlers.graph_utils.create_processing_graph(
+                    graph=self.__graph,
+                    source_nodes=source_nodes,
+                    node_handlers=node_handlers
+                )
             level = 0
             for _, handlers in layers.items():
                 increase_level = False
@@ -572,7 +409,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
 
     # TODO: Remove validate_call
     @log(enabled=LOGGING_ENABLED)
-    def __obtain_nodes_in_secondary_processing_graph(self) -> set[KeyStr]:
+    def __get_nodes_in_secondary_processing_graph(self) -> set[KeyStr]:
         """Obtain nodes in secondary processing graph.
 
         :return: Nodes in secondary processing graph.
@@ -587,69 +424,6 @@ class GraphHandler(BaseModel, validate_assignment=True):
         graph_nodes = set(self.__graph.nodes)
         main_nodes = {node for nodes in main_layers for node in nodes}
         return graph_nodes - main_nodes
-
-    # TODO: Remove validate_call
-    @validate_call
-    @log(enabled=LOGGING_ENABLED)
-    def __obtain_source_nodes(self, nodes: set[KeyStr]) -> list[KeyStr]:
-        """Obtain source nodes. This corresponds to nodes that do not have
-        input streams.
-
-        :param nodes: List of nodes
-        :type nodes: set[KeyStr]
-
-        :return: Source nodes.
-        :rtype: list[KeyStr]
-        """
-        return {
-            node_key
-            for node_key in nodes
-            if len(self.__graph.in_edges(node_key)) == 0
-        }
-
-    # TODO: Remove validate_call
-    @validate_call
-    @log(enabled=LOGGING_ENABLED)
-    def __validate_nodes_and_streams(self, stream_handler: StreamHandler):
-        """Validates if the graph has no isolated nodes and all stream have
-        connections.
-
-        :param stream_handler: Handler for input and output streams.
-        :type stream_handler: StreamHandler
-
-        :raises ConfigurationError: If the graph has isolated nodes or
-         has streams without connections.
-        """
-        isolated_nodes = list(isolates(self.__graph))
-        error_message = ""
-        if len(isolated_nodes) != 0:
-            isolated_nodes_str = ""
-            for node_key in isolated_nodes:
-                if isolated_nodes_str == "":
-                    isolated_nodes_str += f"{node_key}"
-                else:
-                    isolated_nodes_str += f", {node_key}"
-            error_message = f"There are {len(isolated_nodes)} isolated " \
-                f"nodes: {isolated_nodes_str}. "
-
-        if stream_handler.has_unconnected_streams():
-            unconnected_streams = stream_handler.get_unconnected_stream_keys()
-            unconnected_streams_str = ""
-            for stream_key in unconnected_streams:
-                if unconnected_streams_str == "":
-                    unconnected_streams_str += f"{stream_key}"
-                else:
-                    unconnected_streams_str += f", {stream_key}"
-            error_message += f"There are {len(unconnected_streams)} " \
-                f"unconnected streams: {unconnected_streams_str}. "
-
-        if (
-            len(isolated_nodes) != 0
-            or stream_handler.has_unconnected_streams()
-        ):
-            error_message += "Please review configuration"
-            NodeIOLogger().logger.error(error_message)
-            raise ConfigurationError(error_message)
 
     @log(enabled=LOGGING_ENABLED)
     def __validate_open_execution(self):

@@ -1,3 +1,10 @@
+"""The graph async module contains auxiliary functions for asynchronous
+ graph processing.
+
+Functions:
+    process_graph_async - processes the graph asynchronously.
+"""
+
 import asyncio
 import sys
 from typing import Optional
