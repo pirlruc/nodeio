@@ -204,6 +204,7 @@ class NodeHandler(BaseModel, validate_assignment=True):
         """
         return any(input.default is None for _, input in self.__inputs.items())
 
+    # TODO: Check another way to set input and output streams
     @staticmethod
     @validate_call
     @log(enabled=LOGGING_ENABLED)
@@ -266,13 +267,13 @@ class NodeHandler(BaseModel, validate_assignment=True):
             )
             input_stream.stream = output_stream
             input_stream.arg = handler.inputs[input_stream_config.arg]
-            handler.input_streams.append(input_stream)
+            handler.__input_streams.append(input_stream)
             stream_handler.register_connection(
                 key=input_stream_config.stream, ending=handler.name
             )
 
         if configuration.output_stream is not None:
-            handler.output_stream = OutputStream(
+            handler.__output_stream = OutputStream(
                 key=configuration.output_stream, type=handler.output.type
             )
             stream_handler.add_output_stream(
