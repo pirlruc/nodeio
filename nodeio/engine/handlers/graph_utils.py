@@ -226,8 +226,7 @@ def validate_nodes_and_streams(graph: DiGraph, stream_handler: StreamHandler):
             f"unconnected streams: {unconnected_streams_str}. "
 
     if (len(isolated_nodes) != 0
-        or stream_handler.has_unconnected_streams()
-        ):
+            or stream_handler.has_unconnected_streams()):
         error_message += "Please review configuration"
         NodeIOLogger().logger.error(error_message)
         raise ConfigurationError(error_message)

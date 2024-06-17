@@ -8,4 +8,3 @@ Classes:
 
 class ConfigurationError(Exception):
     """Configuration error exception"""
-    pass

@@ -39,6 +39,42 @@ class NodeHandler(BaseModel, validate_assignment=True):
     __output_stream: Optional[OutputStream] = PrivateAttr(default=None)
 
     @property
+    def inputs(self) -> dict[KeyStr, InputArg]:
+        """Returns the inputs associated with the functor.
+
+        :return: Inputs of node handler functor
+        :rtype: dict[KeyStr, InputArg]
+        """
+        return self.__inputs
+
+    @property
+    def output(self) -> OutputArg:
+        """Returns the output associated with the functor.
+
+        :return: Output of node handler functor
+        :rtype: OutputArg
+        """
+        return self.__output
+
+    @property
+    def input_streams(self) -> list[InputStream]:
+        """Returns the input streams associated with the node handler.
+
+        :return: Inputs streams of node handler
+        :rtype: list[InputStream]
+        """
+        return self.__input_streams
+
+    @property
+    def output_stream(self) -> OutputStream:
+        """Returns the output stream associated with the node handler.
+
+        :return: Output stream of node handler
+        :rtype: OutputStream
+        """
+        return self.__output_stream
+
+    @property
     def number_inputs(self) -> int:
         """Returns the number of inputs associated with the functor.
 
@@ -159,7 +195,7 @@ class NodeHandler(BaseModel, validate_assignment=True):
         return self.__output_stream is not None
 
     @log(enabled=LOGGING_ENABLED)
-    def __has_mandatory_inputs(self) -> bool:
+    def has_mandatory_inputs(self) -> bool:
         """Checks if there are mandatory inputs for the functor in the handler.
 
         :return: Returns true if there are mandatory inputs, and false
@@ -198,7 +234,7 @@ class NodeHandler(BaseModel, validate_assignment=True):
 
         if (
             len(configuration.input_streams) == 0
-            and handler.__has_mandatory_inputs()
+            and handler.has_mandatory_inputs()
         ):
             error_message = "Functor has mandatory input arguments for node " \
                 f"{handler.name}. Please review configuration to add input " \
@@ -207,7 +243,7 @@ class NodeHandler(BaseModel, validate_assignment=True):
             raise ConfigurationError(error_message)
 
         for input_stream_config in configuration.input_streams:
-            if input_stream_config.arg not in handler.__inputs.keys():
+            if input_stream_config.arg not in handler.inputs.keys():
                 error_message = f"Input arg {input_stream_config.arg} " \
                     f"provided for stream {input_stream_config.stream} does " \
                     "not exist in functor. Please review configuration"
@@ -229,17 +265,17 @@ class NodeHandler(BaseModel, validate_assignment=True):
                 configuration=input_stream_config
             )
             input_stream.stream = output_stream
-            input_stream.arg = handler.__inputs[input_stream_config.arg]
-            handler.__input_streams.append(input_stream)
+            input_stream.arg = handler.inputs[input_stream_config.arg]
+            handler.input_streams.append(input_stream)
             stream_handler.register_connection(
                 key=input_stream_config.stream, ending=handler.name
             )
 
         if configuration.output_stream is not None:
-            handler.__output_stream = OutputStream(
-                key=configuration.output_stream, type=handler.__output.type
+            handler.output_stream = OutputStream(
+                key=configuration.output_stream, type=handler.output.type
             )
             stream_handler.add_output_stream(
-                stream=handler.__output_stream, origin=handler.name
+                stream=handler.output_stream, origin=handler.name
             )
         return handler
