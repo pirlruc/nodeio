@@ -186,10 +186,10 @@ class GraphHandler(BaseModel, validate_assignment=True):
             context = {}
 
         self.__validate_open_execution()
-        self.__validate_streams_in_context(
+        nodeio.engine.handlers.graph_utils.validate_streams_in_context(
             streams=self.__input_streams, context=context
         )
-        process_context = context.copy()
+        process_context = context
         process_context.update(self.__secondary_context)
         NodeIOLogger().logger.info("Processing nodes from main processing "
                                    "graph...")
@@ -197,7 +197,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
             context=process_context,
             graph=self.__main_processing_graph
         )
-        self.__validate_streams_in_context(
+        nodeio.engine.handlers.graph_utils.validate_streams_in_context(
             streams=self.__output_streams, context=process_context
         )
         return self.__filter_output(context=process_context)
@@ -221,10 +221,10 @@ class GraphHandler(BaseModel, validate_assignment=True):
             context = {}
 
         self.__validate_open_execution()
-        self.__validate_streams_in_context(
+        nodeio.engine.handlers.graph_utils.validate_streams_in_context(
             streams=self.__input_streams, context=context
         )
-        process_context = context.copy()
+        process_context = context
         process_context.update(self.__secondary_context)
         NodeIOLogger().logger.info("Processing nodes from main processing "
                                    "graph...")
@@ -233,27 +233,32 @@ class GraphHandler(BaseModel, validate_assignment=True):
                 context=process_context,
                 graph=self.__main_processing_graph
             )
-        self.__validate_streams_in_context(
+        nodeio.engine.handlers.graph_utils.validate_streams_in_context(
             streams=self.__output_streams, context=process_context
         )
         return self.__filter_output(context=process_context)
 
     @validate_call
     @log(enabled=LOGGING_ENABLED)
-    def write_graph(self, filename: str):
+    def write_graph(self, filename: str, options: Optional[dict] = None):
         """Writes the graph into an image file.
 
         :param filename: Image filename to save the graph
         :type filename: str
+        :param options: Options to draw the graph. For more information check
+         draw_networkx documentation
+        :type options: dict
         """
-        options = {
-            "font_size": 14,
-            "node_size": 600,
-            "node_color": "white",
-            "edgecolors": "black",
-            "linewidths": 2,
-            "width": 2,
-        }
+        if options is None:
+            options = {
+                "font_size": 14,
+                "node_size": 600,
+                "node_color": "white",
+                "edgecolors": "black",
+                "linewidths": 2,
+                "width": 2,
+            }
+
         draw_networkx(self.__graph, **options)
         ax = matplotlib.pyplot.gca()
         ax.margins(0.20)
@@ -437,37 +442,9 @@ class GraphHandler(BaseModel, validate_assignment=True):
             self.number_secondary_processing_graph_nodes != 0
             and len(self.__secondary_context) == 0
         ):
+            # TODO: Execute open method and send warning
             error_message = "The nodes independent from the main processing " \
                 "graph must be executed before the main processing graph. " \
                 "Please perform open() method."
             NodeIOLogger().logger.error(error_message)
             raise RuntimeError(error_message)
-
-    # TODO: Remove validate_call
-    @staticmethod
-    @validate_call
-    @log(enabled=LOGGING_ENABLED)
-    def __validate_streams_in_context(
-        streams: list[OutputStream],
-        context: dict[KeyStr, ContextStream],
-    ):
-        """Validate if streams are present and have a value in context.
-
-        :param streams: List of streams that should exist and have a value in
-        context
-        :type streams: list[OutputStream]
-        :param context: Graph processing context
-        :type context: dict[KeyStr, ContextStream]
-
-        :raises KeyError: If stream is not present or it does not have a value
-        in context
-        """
-        for stream in streams:
-            if (
-                stream.key not in context
-                or not context[stream.key].has_value()
-            ):
-                error_message = "Context does not have the stream " \
-                    f"{stream.key} value loaded."
-                NodeIOLogger().logger.error(error_message)
-                raise KeyError(error_message)

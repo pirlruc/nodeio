@@ -10,6 +10,8 @@ Functions:
      connections between nodes.
     create_processing_graph - creates a leveled processing graph.
     get_source_nodes - checks source nodes within a list of nodes.
+    validate_streams_in_context - checks if streams are present and have a
+     value in context.
 """
 
 from typing import Optional
@@ -23,7 +25,7 @@ from nodeio.engine.configuration import Node
 from nodeio.engine.handlers.node_handler import NodeHandler
 from nodeio.engine.handlers.stream_handler import StreamHandler
 from nodeio.engine.node_factory import NodeFactory
-from nodeio.engine.structures.stream import OutputStream
+from nodeio.engine.structures.stream import ContextStream, OutputStream
 from nodeio.infrastructure.constants import LOGGING_ENABLED
 from nodeio.infrastructure.constrained_types import KeyStr
 from nodeio.infrastructure.exceptions import ConfigurationError
@@ -295,3 +297,31 @@ def get_source_nodes(graph: DiGraph, nodes: set[KeyStr]) -> set[KeyStr]:
         for node_key in nodes
         if len(graph.in_edges(node_key)) == 0
     }
+
+
+@validate_call
+@log(enabled=LOGGING_ENABLED)
+def validate_streams_in_context(
+    streams: list[OutputStream],
+    context: dict[KeyStr, ContextStream],
+):
+    """Validate if streams are present and have a value in context.
+
+    :param streams: List of streams that should exist and have a value in
+    context
+    :type streams: list[OutputStream]
+    :param context: Graph processing context
+    :type context: dict[KeyStr, ContextStream]
+
+    :raises KeyError: If stream is not present or it does not have a value
+    in context
+    """
+    for stream in streams:
+        if (
+            stream.key not in context
+            or not context[stream.key].has_value()
+        ):
+            error_message = "Context does not have the stream " \
+                f"{stream.key} value loaded."
+            NodeIOLogger().logger.error(error_message)
+            raise KeyError(error_message)
