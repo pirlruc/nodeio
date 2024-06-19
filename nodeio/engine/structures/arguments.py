@@ -14,13 +14,16 @@ from pydantic.functional_validators import AfterValidator
 from typing_extensions import Self
 
 from nodeio.decorators.logging import log
-from nodeio.infrastructure.constants import LOGGING_ENABLED
+from nodeio.decorators.validation import custom_validate_call
+from nodeio.infrastructure.constants import (
+    LOGGING_ENABLED,
+    PRIVATE_VALIDATE_CALL_ENABLED,
+)
 from nodeio.infrastructure.constrained_types import KeyStr
 from nodeio.infrastructure.logger import NodeIOLogger
 
 
-# TODO: Remove validate_call
-@validate_call
+@custom_validate_call(enabled=PRIVATE_VALIDATE_CALL_ENABLED)
 @log(enabled=LOGGING_ENABLED)
 def __transform_parameter_empty_to_none(value: object):
     """Converts an empty parameter annotation to None.

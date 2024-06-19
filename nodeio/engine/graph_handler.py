@@ -25,12 +25,16 @@ import nodeio.engine.handlers.graph_async
 import nodeio.engine.handlers.graph_sync
 import nodeio.engine.handlers.graph_utils
 from nodeio.decorators.logging import log
+from nodeio.decorators.validation import custom_validate_call
 from nodeio.engine.configuration import Graph
 from nodeio.engine.handlers.node_handler import NodeHandler
 from nodeio.engine.handlers.stream_handler import StreamHandler
 from nodeio.engine.node_factory import NodeFactory
 from nodeio.engine.structures.stream import ContextStream, OutputStream
-from nodeio.infrastructure.constants import LOGGING_ENABLED
+from nodeio.infrastructure.constants import (
+    LOGGING_ENABLED,
+    PRIVATE_VALIDATE_CALL_ENABLED,
+)
 from nodeio.infrastructure.constrained_types import KeyStr
 from nodeio.infrastructure.logger import NodeIOLogger
 
@@ -265,8 +269,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
         matplotlib.pyplot.axis("off")
         matplotlib.pyplot.savefig(filename)
 
-    # TODO: Remove validate_call
-    @validate_call
+    @custom_validate_call(enabled=PRIVATE_VALIDATE_CALL_ENABLED)
     @log(enabled=LOGGING_ENABLED)
     def __create_graph(self, factory: NodeFactory, configuration: Graph):
         """Create nodes and streams for a directed graph.
@@ -316,8 +319,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
             stream_handler=stream_handler
         )
 
-    # TODO: Remove validate_call
-    @validate_call
+    @custom_validate_call(enabled=PRIVATE_VALIDATE_CALL_ENABLED)
     @log(enabled=LOGGING_ENABLED)
     def __create_main_processing_graph(
         self, node_handlers: dict[KeyStr, Optional[NodeHandler]]
@@ -339,8 +341,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
             node_handlers=node_handlers
         )
 
-    # TODO: Remove validate_call
-    @validate_call
+    @custom_validate_call(enabled=PRIVATE_VALIDATE_CALL_ENABLED)
     @log(enabled=LOGGING_ENABLED)
     def __create_secondary_processing_graph(
         self, node_handlers: dict[KeyStr, Optional[NodeHandler]]
@@ -393,8 +394,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
 
         return processing_graph
 
-    # TODO: Remove validate_call
-    @validate_call
+    @custom_validate_call(enabled=PRIVATE_VALIDATE_CALL_ENABLED)
     @log(enabled=LOGGING_ENABLED)
     def __filter_output(
         self, context: dict[KeyStr, ContextStream]
@@ -412,7 +412,6 @@ class GraphHandler(BaseModel, validate_assignment=True):
             output[output_stream.key] = context[output_stream.key].get()
         return output
 
-    # TODO: Remove validate_call
     @log(enabled=LOGGING_ENABLED)
     def __get_nodes_in_secondary_processing_graph(self) -> set[KeyStr]:
         """Obtain nodes in secondary processing graph.
