@@ -1,6 +1,10 @@
 line-length = 79
 indent-width = 4
 
+exclude = [
+    "nodeio/__init__.py"
+]
+
 [lint]
 extend-select = [
     "E",   # pycodestyle

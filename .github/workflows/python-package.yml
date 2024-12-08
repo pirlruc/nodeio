@@ -54,6 +54,16 @@ jobs:
         pip install docstr-coverage
         docstr-coverage nodeio --fail-under=90
 
+    - name: Bandit security analysis
+      run: |
+        pip install bandit
+        bandit -r nodeio
+
+    - name: Semgrep security analysis
+      run: |
+        pip install semgrep
+        semgrep scan --config auto nodeio
+
   test:
     runs-on: ${{ matrix.os }}
     needs: [lint]
