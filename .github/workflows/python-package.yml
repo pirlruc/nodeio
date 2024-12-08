@@ -41,7 +41,8 @@ jobs:
     - name: Lint with ruff
       run: |
         pip install ruff
-        ruff check --statistics --output-format=github nodeio
+        ruff check --output-format=github nodeio
+        ruff check --statistics nodeio
 
     - name: Lint with pylint
       run: |
