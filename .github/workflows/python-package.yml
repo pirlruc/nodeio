@@ -54,6 +54,25 @@ jobs:
         pip install docstr-coverage
         docstr-coverage nodeio --fail-under=90
 
+  sast:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+
     - name: Bandit security analysis
       run: |
         pip install bandit
@@ -66,7 +85,7 @@ jobs:
 
   test:
     runs-on: ${{ matrix.os }}
-    needs: [lint]
+    needs: [lint, sast]
     strategy:
       fail-fast: false
       matrix:
@@ -107,7 +126,7 @@ jobs:
 
   build:
     runs-on: ${{ matrix.os }}
-    needs: [lint, test]
+    needs: [test]
     strategy:
       fail-fast: false
       matrix:
