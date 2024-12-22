@@ -1,46 +1,47 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/cpp
 {
-	"name": "cpp-python:ubuntu-22.04",
+    "name": "nodeio-python:ubuntu-22.04",
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
-	"features": 
+	"features":
 	{
 		"ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
 			"packages": "libgl1-mesa-glx, nano"
 		},
-		"ghcr.io/devcontainers/features/python:1": 
+		"ghcr.io/devcontainers/features/python:1":
 		{
 			"version": 3.9
 		}
 	},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
+	"forwardPorts": [49152],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "pip install coverage && pip install pytest && pip install ruff && pip install flake8 && pip install pylint && pip install docstr-coverage",
+	"postCreateCommand": "./.devcontainer/postCreateCommand.sh",
 
 	// Configure tool-specific properties.
-	"customizations": 
+	"customizations":
 	{
 		"vscode":
 		{
-			"extensions": 
+			"extensions":
 			[
-			    "ms-python.python"
-			  , "charliermarsh.ruff"
-			  , "ms-python.autopep8"
-			  , "tamasfe.even-better-toml"
-			  , "donjayamanne.python-environment-manager"
-			  , "njpwerner.autodocstring"
-			  , "mhutchie.git-graph"
-			  , "eamodio.gitlens"
-			  , "gruntfuggly.todo-tree"
-			]
+                "ms-python.python",
+                "charliermarsh.ruff",
+                "ms-python.autopep8",
+                "tamasfe.even-better-toml",
+                "donjayamanne.python-environment-manager",
+                "njpwerner.autodocstring",
+                "mhutchie.git-graph",
+                "eamodio.gitlens",
+                "gruntfuggly.todo-tree",
+                "elagil.pre-commit-helper"
+            ]
 		}
 	}
 

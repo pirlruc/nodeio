@@ -48,7 +48,7 @@ class Factory(BaseModel, validate_assignment=True):
         :raises KeyError: If the key is already defined in factory.
         """
         if key in self.__callbacks.keys():
-            error_message = "Functor key already defined in factory"
+            error_message = 'Functor key already defined in factory'
             NodeIOLogger().logger.error(error_message)
             raise KeyError(error_message)
         self.__callbacks[key] = functor
@@ -68,7 +68,7 @@ class Factory(BaseModel, validate_assignment=True):
         :raises KeyError: If the key is not present in factory.
         """
         if key not in self.__callbacks.keys():
-            error_message = "Functor key not present in factory"
+            error_message = 'Functor key not present in factory'
             NodeIOLogger().logger.error(error_message)
             raise KeyError(error_message)
         self.__callbacks.pop(key, None)
@@ -87,7 +87,7 @@ class Factory(BaseModel, validate_assignment=True):
         :raises KeyError: If the key is not present in factory.
         """
         if key not in self.__callbacks.keys():
-            error_message = "Functor key not present in factory"
+            error_message = 'Functor key not present in factory'
             NodeIOLogger().logger.error(error_message)
             raise KeyError(error_message)
         return self.__callbacks[key](*args, **kwargs)

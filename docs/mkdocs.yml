@@ -1,6 +1,6 @@
 site_name: nodeio
 
-theme: 
+theme:
   name: material
   language: en # language of the site
   features:

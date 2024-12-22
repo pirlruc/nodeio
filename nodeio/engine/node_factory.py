@@ -48,9 +48,11 @@ class NodeFactory(Factory):
             or isabstract(return_values)
             or not isinstance(return_values(), BaseNode)
         ):
-            error_message = "Functor return annotation provided an " \
-                f"incorrect type for key {key}. Please review " \
-                "functor annotation"
+            error_message = (
+                'Functor return annotation provided an '
+                f'incorrect type for key {key}. Please review '
+                'functor annotation'
+            )
             NodeIOLogger().logger.error(error_message)
             raise TypeError(error_message)
         super().register(key, functor)
@@ -73,8 +75,10 @@ class NodeFactory(Factory):
         """
         result = super().create(key, *args, **kwargs)
         if not isinstance(result, BaseNode):
-            error_message = f"Functor for key {key} returns an incorrect " \
-                f"type: {type(result)}. Please review functor"
+            error_message = (
+                f'Functor for key {key} returns an incorrect '
+                f'type: {type(result)}. Please review functor'
+            )
             NodeIOLogger().logger.error(error_message)
             raise TypeError(error_message)
         return result

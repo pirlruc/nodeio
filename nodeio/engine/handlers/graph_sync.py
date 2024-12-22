@@ -21,7 +21,7 @@ from nodeio.infrastructure.logger import NodeIOLogger
 @log(enabled=LOGGING_ENABLED)
 def process_graph(
     graph: dict[int, list[NodeHandler]],
-    context: Optional[dict[KeyStr, ContextStream]] = None
+    context: Optional[dict[KeyStr, ContextStream]] = None,
 ) -> dict[KeyStr, ContextStream]:
     """Process graphs synchronously.
 
@@ -37,13 +37,8 @@ def process_graph(
         context = {}
 
     for level, node_handlers in graph.items():
-        NodeIOLogger().logger.info(
-            "Processing %d nodes in level %d...",
-            len(node_handlers), level
-        )
+        NodeIOLogger().logger.info('Processing %d nodes in level %d...', len(node_handlers), level)
         for node_handler in node_handlers:
-            NodeIOLogger().logger.info(
-                "--> Processing node handler %s...", node_handler.name
-            )
+            NodeIOLogger().logger.info('--> Processing node handler %s...', node_handler.name)
             context = node_handler.process(context=context)
     return context

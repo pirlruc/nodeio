@@ -14,15 +14,15 @@ class TestAction(unittest.TestCase):
     def test_invalid_constructor(self):
         with self.assertRaises(pydantic_core.ValidationError):
             ActionA(type=list)
-            ActionA(type=list, value="")
-            ActionA(type=list, value="  ")
+            ActionA(type=list, value='')
+            ActionA(type=list, value='  ')
             ActionA(type=1, value=1)
 
     def test_invalid_update(self):
         action = ActionA(value=1)
         with self.assertRaises(pydantic_core.ValidationError):
-            action.value = ""
-            action.value = "  "
+            action.value = ''
+            action.value = '  '
 
     def test_constructor(self):
         action = ActionA(value=1)
@@ -31,9 +31,9 @@ class TestAction(unittest.TestCase):
 
     def test_update(self):
         action = ActionA(value=1)
-        action.value = "a"
+        action.value = 'a'
         self.assertIsNone(action.type)
-        self.assertEqual(action.value, "a")
+        self.assertEqual(action.value, 'a')
 
     def test_from_list_configuration(self):
         config = nodeio.engine.configuration.ListAction(index=1)
@@ -42,16 +42,16 @@ class TestAction(unittest.TestCase):
         self.assertEqual(action.value, 1)
 
     def test_from_dict_configuration(self):
-        config = nodeio.engine.configuration.DictAction(key="a")
+        config = nodeio.engine.configuration.DictAction(key='a')
         action = Action.from_configuration(configuration=config)
         self.assertEqual(action.type, dict)
-        self.assertEqual(action.value, "a")
+        self.assertEqual(action.value, 'a')
 
 
 class TestListAction(unittest.TestCase):
     def test_invalid_constructor(self):
         with self.assertRaises(pydantic_core.ValidationError):
-            ListAction(value="a")
+            ListAction(value='a')
 
     def test_constructor(self):
         action = ListAction(value=1)
@@ -61,7 +61,7 @@ class TestListAction(unittest.TestCase):
     def test_invalid_update(self):
         action = ListAction(value=1)
         with self.assertRaises(pydantic_core.ValidationError):
-            action.value = "a"
+            action.value = 'a'
 
     def test_update(self):
         action = ListAction(value=1)
@@ -79,28 +79,28 @@ class TestListAction(unittest.TestCase):
 class TestDictAction(unittest.TestCase):
     def test_invalid_constructor(self):
         with self.assertRaises(pydantic_core.ValidationError):
-            DictAction(value="")
-            DictAction(value="  ")
+            DictAction(value='')
+            DictAction(value='  ')
             DictAction(value=1)
 
     def test_constructor(self):
-        action = DictAction(value="a")
+        action = DictAction(value='a')
         self.assertEqual(action.type, dict)
-        self.assertEqual(action.value, "a")
+        self.assertEqual(action.value, 'a')
 
     def test_invalid_update(self):
-        action = DictAction(value="a")
+        action = DictAction(value='a')
         with self.assertRaises(pydantic_core.ValidationError):
             action.value = 1
 
     def test_update(self):
-        action = DictAction(value="a")
-        action.value = "b"
+        action = DictAction(value='a')
+        action.value = 'b'
         self.assertEqual(action.type, dict)
-        self.assertEqual(action.value, "b")
+        self.assertEqual(action.value, 'b')
 
     def test_from_configuration(self):
-        config = nodeio.engine.configuration.DictAction(key="a")
+        config = nodeio.engine.configuration.DictAction(key='a')
         action = DictAction.from_configuration(configuration=config)
         self.assertEqual(action.type, dict)
-        self.assertEqual(action.value, "a")
+        self.assertEqual(action.value, 'a')

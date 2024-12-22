@@ -40,7 +40,7 @@ class InputStream(BaseModel, validate_assignment=True):
     stream: OutputStream
     actions: Optional[list[Action]] = []
 
-    @model_validator(mode="after")
+    @model_validator(mode='after')
     @log(enabled=LOGGING_ENABLED)
     def _check_data_type_fields(self) -> Self:
         """Completes information regarding the input stream data and checks if
@@ -63,9 +63,11 @@ class InputStream(BaseModel, validate_assignment=True):
             if (
                 self.arg.type and self.stream.type
             ) is not None and self.arg.type != self.stream.type:
-                error_message = f"Input argument type {self.arg.type} and " \
-                    f"stream type {self.stream.type} are different. Please " \
-                    f"review stream {self.stream.key}"
+                error_message = (
+                    f'Input argument type {self.arg.type} and '
+                    f'stream type {self.stream.type} are different. Please '
+                    f'review stream {self.stream.key}'
+                )
                 NodeIOLogger().logger.error(error_message)
                 raise TypeError(error_message)
         return self
@@ -117,9 +119,11 @@ class ContextStream(OutputStream):
         # type is a Union the type will return only one of the values in the
         # Union which is not correct.
         if self.type is not None and not isinstance(new_value, self.type):
-            error_message = f"Value type {type(new_value)} does not " \
-                f"correspond to the type {self.type} registered for " \
-                f"stream {self.key}."
+            error_message = (
+                f'Value type {type(new_value)} does not '
+                f'correspond to the type {self.type} registered for '
+                f'stream {self.key}.'
+            )
             NodeIOLogger().logger.error(error_message)
             raise TypeError(error_message)
         self.__value = new_value
@@ -147,9 +151,11 @@ class ContextStream(OutputStream):
         result = self.__value
         for action in actions:
             if not isinstance(result, action.type):
-                error_message = f"Type for selection {type(result)} does " \
-                    f"not correspond to the type {action.type} registered " \
-                    f"for action in stream {self.key}."
+                error_message = (
+                    f'Type for selection {type(result)} does '
+                    f'not correspond to the type {action.type} registered '
+                    f'for action in stream {self.key}.'
+                )
                 NodeIOLogger().logger.error(error_message)
                 raise TypeError(error_message)
             result = result[action.value]

@@ -110,9 +110,11 @@ class NodeHandler(BaseModel, validate_assignment=True):
         """
         properties = signature(functor)
         if isabstract(properties.return_annotation):
-            error_message = "Functor return annotation provided an " \
-                f"incorrect type for node {name}. Please review functor " \
-                "annotation"
+            error_message = (
+                'Functor return annotation provided an '
+                f'incorrect type for node {name}. Please review functor '
+                'annotation'
+            )
             NodeIOLogger().logger.error(error_message)
             raise TypeError(error_message)
 
@@ -120,9 +122,7 @@ class NodeHandler(BaseModel, validate_assignment=True):
         inputs = properties.parameters
         for key in inputs.keys():
             self.__inputs[key] = InputArg.from_parameter(parameter=inputs[key])
-        self.__output = OutputArg.from_return_annotation(
-            parameter=properties.return_annotation
-        )
+        self.__output = OutputArg.from_return_annotation(parameter=properties.return_annotation)
 
     @validate_call
     @log(enabled=LOGGING_ENABLED)
@@ -142,15 +142,12 @@ class NodeHandler(BaseModel, validate_assignment=True):
 
         input_context = {}
         for input_stream in self.__input_streams:
-            input_context[input_stream.arg.key] = \
-                context[input_stream.stream.key].get(
-                    actions=input_stream.actions
+            input_context[input_stream.arg.key] = context[input_stream.stream.key].get(
+                actions=input_stream.actions
             )
         result = self.functor(**input_context)
         if self.__output_stream is not None:
-            context_stream: ContextStream = ContextStream.from_output_stream(
-                self.__output_stream
-            )
+            context_stream: ContextStream = ContextStream.from_output_stream(self.__output_stream)
             context_stream.register(new_value=result)
             context[context_stream.key] = context_stream
         return context
@@ -209,9 +206,8 @@ class NodeHandler(BaseModel, validate_assignment=True):
     @validate_call
     @log(enabled=LOGGING_ENABLED)
     def from_configuration(
-            functor: Callable,
-            stream_handler: StreamHandler,
-            configuration: Node) -> Self:
+        functor: Callable, stream_handler: StreamHandler, configuration: Node
+    ) -> Self:
         """Creates a node processing handler from the node configuration.
 
         :param functor: Processing functor
@@ -233,32 +229,33 @@ class NodeHandler(BaseModel, validate_assignment=True):
         """
         handler = NodeHandler(name=configuration.node, functor=functor)
 
-        if (
-            len(configuration.input_streams) == 0
-            and handler.has_mandatory_inputs()
-        ):
-            error_message = "Functor has mandatory input arguments for node " \
-                f"{handler.name}. Please review configuration to add input " \
-                "streams"
+        if len(configuration.input_streams) == 0 and handler.has_mandatory_inputs():
+            error_message = (
+                'Functor has mandatory input arguments for node '
+                f'{handler.name}. Please review configuration to add input '
+                'streams'
+            )
             NodeIOLogger().logger.error(error_message)
             raise ConfigurationError(error_message)
 
         for input_stream_config in configuration.input_streams:
             if input_stream_config.arg not in handler.inputs.keys():
-                error_message = f"Input arg {input_stream_config.arg} " \
-                    f"provided for stream {input_stream_config.stream} does " \
-                    "not exist in functor. Please review configuration"
+                error_message = (
+                    f'Input arg {input_stream_config.arg} '
+                    f'provided for stream {input_stream_config.stream} does '
+                    'not exist in functor. Please review configuration'
+                )
                 NodeIOLogger().logger.error(error_message)
                 raise ConfigurationError(error_message)
 
             try:
-                output_stream = stream_handler.get_output_stream(
-                    key=input_stream_config.stream
-                )
+                output_stream = stream_handler.get_output_stream(key=input_stream_config.stream)
             except KeyError as error:
-                error_message = f"Input stream {input_stream_config.stream} " \
-                    f"defined for node {handler.name} does not have an " \
-                    "output stream associated. Please review configuration"
+                error_message = (
+                    f'Input stream {input_stream_config.stream} '
+                    f'defined for node {handler.name} does not have an '
+                    'output stream associated. Please review configuration'
+                )
                 NodeIOLogger().logger.error(error_message)
                 raise ConfigurationError(error_message) from error
 
@@ -268,15 +265,11 @@ class NodeHandler(BaseModel, validate_assignment=True):
             input_stream.stream = output_stream
             input_stream.arg = handler.inputs[input_stream_config.arg]
             handler.__input_streams.append(input_stream)
-            stream_handler.register_connection(
-                key=input_stream_config.stream, ending=handler.name
-            )
+            stream_handler.register_connection(key=input_stream_config.stream, ending=handler.name)
 
         if configuration.output_stream is not None:
             handler.__output_stream = OutputStream(
                 key=configuration.output_stream, type=handler.output.type
             )
-            stream_handler.add_output_stream(
-                stream=handler.output_stream, origin=handler.name
-            )
+            stream_handler.add_output_stream(stream=handler.output_stream, origin=handler.name)
         return handler

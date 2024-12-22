@@ -20,14 +20,13 @@ from nodeio.infrastructure.logger import NodeIOLogger
 class _Connection(BaseModel):
     """Identifies the node that originate an output stream and defines if
     the output stream is connected to an input stream."""
+
     origin: KeyStr
     stream: OutputStream
     connected: bool = False
 
 
-class StreamHandler(
-    BaseModel, validate_assignment=True, arbitrary_types_allowed=True
-):
+class StreamHandler(BaseModel, validate_assignment=True, arbitrary_types_allowed=True):
     """Handle input and output stream connections."""
 
     graph: DiGraph = Field(frozen=True)
@@ -58,13 +57,12 @@ class StreamHandler(
         :rtype: Self
         """
         if stream.key in self.__output.keys():
-            error_message = f"Output stream {stream.key} already exists. " \
-                "Please review stream key"
+            error_message = (
+                f'Output stream {stream.key} already exists. ' 'Please review stream key'
+            )
             NodeIOLogger().logger.error(error_message)
             raise KeyError(error_message)
-        self.__output[stream.key] = _Connection(
-            origin=origin, stream=stream
-        )
+        self.__output[stream.key] = _Connection(origin=origin, stream=stream)
         return self
 
     @validate_call
@@ -81,8 +79,7 @@ class StreamHandler(
         :rtype: OutputStream
         """
         if key not in self.__output.keys():
-            error_message = f"Output stream {key} does not exist. Please " \
-                "review configuration"
+            error_message = f'Output stream {key} does not exist. Please ' 'review configuration'
             NodeIOLogger().logger.error(error_message)
             raise KeyError(error_message)
         return self.__output[key].stream
@@ -106,16 +103,17 @@ class StreamHandler(
         :rtype: Self
         """
         if key not in self.__output.keys():
-            error_message = f"Output stream {key} does not exist. Please " \
-                "review configuration"
+            error_message = f'Output stream {key} does not exist. Please ' 'review configuration'
             NodeIOLogger().logger.error(error_message)
             raise KeyError(error_message)
 
         origin_node = self.__output[key].origin
         if ending == origin_node:
-            error_message = f"Origin node {origin_node} and ending node " \
-                f"{ending} for stream {key} is the same. Please review " \
-                "configuration"
+            error_message = (
+                f'Origin node {origin_node} and ending node '
+                f'{ending} for stream {key} is the same. Please review '
+                'configuration'
+            )
             NodeIOLogger().logger.error(error_message)
             raise ConfigurationError(error_message)
 
@@ -131,9 +129,7 @@ class StreamHandler(
         output streams are connected, returns false.
         :rtype: bool
         """
-        return any(
-            stream.connected is False for _, stream in self.__output.items()
-        )
+        return any(stream.connected is False for _, stream in self.__output.items())
 
     @log(enabled=LOGGING_ENABLED)
     def get_unconnected_stream_keys(self) -> list[KeyStr]:
@@ -142,8 +138,4 @@ class StreamHandler(
         :return: Returns unconnected output streams.
         :rtype: list[KeyStr]
         """
-        return [
-            key
-            for key, stream in self.__output.items()
-            if not stream.connected
-        ]
+        return [key for key, stream in self.__output.items() if not stream.connected]

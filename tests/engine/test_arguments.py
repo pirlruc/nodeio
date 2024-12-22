@@ -7,7 +7,7 @@ from nodeio.engine.structures.arguments import InputArg, OutputArg
 
 
 def no_input_no_output():
-    print("a")
+    print('a')
 
 
 def no_input_with_output():
@@ -19,39 +19,39 @@ def input_not_annotated(a, b=2):
 
 
 def input_annotated_invalid(a: int, b: float, c: int = 2.2):
-    return a+b+c
+    return a + b + c
 
 
 def input_annotated(a: int, b: float, c: int = 2):
-    return a+b+c
+    return a + b + c
 
 
 def input_output_annotated(a: int, b: int, c: int = 2) -> int:
-    return a+b+c
+    return a + b + c
 
 
 class TestArguments(unittest.TestCase):
     def test_invalid_input_constructor(self):
         with self.assertRaises(pydantic_core.ValidationError):
-            InputArg(key="")
-            InputArg(key="  ")
+            InputArg(key='')
+            InputArg(key='  ')
 
     def test_input_constructor(self):
-        input_1 = InputArg(key="a")
-        input_2 = InputArg(key="b", type=str)
-        input_3 = InputArg(key="c", type=str, default="test")
-        self.assertEqual(input_1.key, "a")
+        input_1 = InputArg(key='a')
+        input_2 = InputArg(key='b', type=str)
+        input_3 = InputArg(key='c', type=str, default='test')
+        self.assertEqual(input_1.key, 'a')
         self.assertIsNone(input_1.type)
         self.assertIsNone(input_1.default)
-        self.assertEqual(input_2.key, "b")
+        self.assertEqual(input_2.key, 'b')
         self.assertEqual(input_2.type, str)
         self.assertIsNone(input_2.default)
-        self.assertEqual(input_3.key, "c")
+        self.assertEqual(input_3.key, 'c')
         self.assertEqual(input_3.type, str)
-        self.assertEqual(input_3.default, "test")
+        self.assertEqual(input_3.default, 'test')
 
     def test_input_modification(self):
-        input = InputArg(key="a")
+        input = InputArg(key='a')
         input.type = Parameter.empty
         input.default = Parameter.empty
         self.assertIsNone(input.type)
@@ -91,12 +91,12 @@ class TestArguments(unittest.TestCase):
             input[key] = InputArg.from_parameter(sig.parameters[key])
         output = OutputArg.from_return_annotation(sig.return_annotation)
         self.assertIsNone(output.type)
-        self.assertEqual(input["a"].key, "a")
-        self.assertIsNone(input["a"].type)
-        self.assertIsNone(input["a"].default)
-        self.assertEqual(input["b"].key, "b")
-        self.assertEqual(input["b"].type, int)
-        self.assertEqual(input["b"].default, 2)
+        self.assertEqual(input['a'].key, 'a')
+        self.assertIsNone(input['a'].type)
+        self.assertIsNone(input['a'].default)
+        self.assertEqual(input['b'].key, 'b')
+        self.assertEqual(input['b'].type, int)
+        self.assertEqual(input['b'].default, 2)
 
     def test_input_annotated(self):
         sig = signature(input_annotated)
@@ -105,15 +105,15 @@ class TestArguments(unittest.TestCase):
             input[key] = InputArg.from_parameter(sig.parameters[key])
         output = OutputArg.from_return_annotation(sig.return_annotation)
         self.assertIsNone(output.type)
-        self.assertEqual(input["a"].key, "a")
-        self.assertEqual(input["a"].type, int)
-        self.assertIsNone(input["a"].default)
-        self.assertEqual(input["b"].key, "b")
-        self.assertEqual(input["b"].type, float)
-        self.assertIsNone(input["b"].default)
-        self.assertEqual(input["c"].key, "c")
-        self.assertEqual(input["c"].type, int)
-        self.assertEqual(input["c"].default, 2)
+        self.assertEqual(input['a'].key, 'a')
+        self.assertEqual(input['a'].type, int)
+        self.assertIsNone(input['a'].default)
+        self.assertEqual(input['b'].key, 'b')
+        self.assertEqual(input['b'].type, float)
+        self.assertIsNone(input['b'].default)
+        self.assertEqual(input['c'].key, 'c')
+        self.assertEqual(input['c'].type, int)
+        self.assertEqual(input['c'].default, 2)
 
     def test_input_annotated_invalid(self):
         sig = signature(input_annotated_invalid)
@@ -129,12 +129,12 @@ class TestArguments(unittest.TestCase):
             input[key] = InputArg.from_parameter(sig.parameters[key])
         output = OutputArg.from_return_annotation(sig.return_annotation)
         self.assertEqual(output.type, int)
-        self.assertEqual(input["a"].key, "a")
-        self.assertEqual(input["a"].type, int)
-        self.assertIsNone(input["a"].default)
-        self.assertEqual(input["b"].key, "b")
-        self.assertEqual(input["b"].type, int)
-        self.assertIsNone(input["b"].default)
-        self.assertEqual(input["c"].key, "c")
-        self.assertEqual(input["c"].type, int)
-        self.assertEqual(input["c"].default, 2)
+        self.assertEqual(input['a'].key, 'a')
+        self.assertEqual(input['a'].type, int)
+        self.assertIsNone(input['a'].default)
+        self.assertEqual(input['b'].key, 'b')
+        self.assertEqual(input['b'].type, int)
+        self.assertIsNone(input['b'].default)
+        self.assertEqual(input['c'].key, 'c')
+        self.assertEqual(input['c'].type, int)
+        self.assertEqual(input['c'].default, 2)

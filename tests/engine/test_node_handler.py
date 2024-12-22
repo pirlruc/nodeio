@@ -47,45 +47,45 @@ class TestNodeHandler(unittest.TestCase):
         with self.assertRaises(pydantic_core.ValidationError):
             NodeHandler()
         with self.assertRaises(pydantic_core.ValidationError):
-            NodeHandler(name="a")
+            NodeHandler(name='a')
         with self.assertRaises(pydantic_core.ValidationError):
             NodeHandler(functor=create_complete_node)
         with self.assertRaises(pydantic_core.ValidationError):
-            NodeHandler(name="", functor=create_complete_node)
+            NodeHandler(name='', functor=create_complete_node)
         with self.assertRaises(pydantic_core.ValidationError):
-            NodeHandler(name="  ", functor=create_complete_node)
+            NodeHandler(name='  ', functor=create_complete_node)
         with self.assertRaises(pydantic_core.ValidationError):
-            NodeHandler(name="  ", functor=create_complete_node)
+            NodeHandler(name='  ', functor=create_complete_node)
         with self.assertRaises(pydantic_core.ValidationError):
-            NodeHandler(name="a", functor=1)
+            NodeHandler(name='a', functor=1)
 
     def test_invalid_functor(self):
         def create_abstract_node(a: int) -> BaseNode:
             return a
 
         with self.assertRaises(TypeError):
-            NodeHandler(name="a", functor=create_abstract_node)
+            NodeHandler(name='a', functor=create_abstract_node)
 
     def test_constructor(self):
         def no_output(a: int):
             return a
 
-        handler_1 = NodeHandler(name="a", functor=create_complete_node)
-        handler_2 = NodeHandler(name="b", functor=create_complete_node_options)
-        handler_3 = NodeHandler(name="c", functor=no_output)
-        self.assertEqual(handler_1.name, "a")
+        handler_1 = NodeHandler(name='a', functor=create_complete_node)
+        handler_2 = NodeHandler(name='b', functor=create_complete_node_options)
+        handler_3 = NodeHandler(name='c', functor=no_output)
+        self.assertEqual(handler_1.name, 'a')
         self.assertEqual(handler_1.functor, create_complete_node)
         self.assertEqual(handler_1.number_inputs, 0)
         self.assertTrue(handler_1.has_output())
         self.assertEqual(handler_1.number_input_streams, 0)
         self.assertFalse(handler_1.has_output_stream())
-        self.assertEqual(handler_2.name, "b")
+        self.assertEqual(handler_2.name, 'b')
         self.assertEqual(handler_2.functor, create_complete_node_options)
         self.assertEqual(handler_2.number_inputs, 2)
         self.assertTrue(handler_2.has_output())
         self.assertEqual(handler_2.number_input_streams, 0)
         self.assertFalse(handler_2.has_output_stream())
-        self.assertEqual(handler_3.name, "c")
+        self.assertEqual(handler_3.name, 'c')
         self.assertEqual(handler_3.functor, no_output)
         self.assertEqual(handler_3.number_inputs, 1)
         self.assertFalse(handler_3.has_output())
@@ -101,7 +101,8 @@ class TestNodeHandler(unittest.TestCase):
             NodeHandler.from_configuration(
                 functor=mandatory_inputs,
                 stream_handler=stream_handler,
-                configuration=Node(node="a", output_stream="2"))
+                configuration=Node(node='a', output_stream='2'),
+            )
 
     def test_no_input_arg(self):
         def mandatory_inputs(a: int):
@@ -111,9 +112,12 @@ class TestNodeHandler(unittest.TestCase):
         with self.assertRaises(ConfigurationError):
             NodeHandler.from_configuration(
                 functor=mandatory_inputs,
-                stream_handler=stream_handler, configuration=Node(
-                    node="a", input_streams=[InputStream(arg="b", stream="1")],
-                    output_stream="2")
+                stream_handler=stream_handler,
+                configuration=Node(
+                    node='a',
+                    input_streams=[InputStream(arg='b', stream='1')],
+                    output_stream='2',
+                ),
             )
 
     def test_no_output_stream(self):
@@ -124,9 +128,12 @@ class TestNodeHandler(unittest.TestCase):
         with self.assertRaises(ConfigurationError):
             NodeHandler.from_configuration(
                 functor=mandatory_inputs,
-                stream_handler=stream_handler, configuration=Node(
-                    node="a", input_streams=[InputStream(arg="a", stream="1")],
-                    output_stream="2")
+                stream_handler=stream_handler,
+                configuration=Node(
+                    node='a',
+                    input_streams=[InputStream(arg='a', stream='1')],
+                    output_stream='2',
+                ),
             )
 
     def test_load(self):
@@ -134,27 +141,29 @@ class TestNodeHandler(unittest.TestCase):
         handler_1 = NodeHandler.from_configuration(
             functor=create_complete_node,
             stream_handler=stream_handler,
-            configuration=Node(node="a", output_stream="1")
+            configuration=Node(node='a', output_stream='1'),
         )
-        stream_handler.add_output_stream(
-            OutputStream(key="3"), origin="source")
-        stream_handler.add_output_stream(
-            OutputStream(key="4"), origin="source")
+        stream_handler.add_output_stream(OutputStream(key='3'), origin='source')
+        stream_handler.add_output_stream(OutputStream(key='4'), origin='source')
         handler_2 = NodeHandler.from_configuration(
             functor=create_complete_node_options,
             stream_handler=stream_handler,
-            configuration=Node(node="b", input_streams=[
-                InputStream(arg="y", stream="3"),
-                InputStream(arg="z", stream="4")
-            ], output_stream="2")
+            configuration=Node(
+                node='b',
+                input_streams=[
+                    InputStream(arg='y', stream='3'),
+                    InputStream(arg='z', stream='4'),
+                ],
+                output_stream='2',
+            ),
         )
-        self.assertEqual(handler_1.name, "a")
+        self.assertEqual(handler_1.name, 'a')
         self.assertEqual(handler_1.functor, create_complete_node)
         self.assertEqual(handler_1.number_inputs, 0)
         self.assertTrue(handler_1.has_output())
         self.assertEqual(handler_1.number_input_streams, 0)
         self.assertTrue(handler_1.has_output_stream())
-        self.assertEqual(handler_2.name, "b")
+        self.assertEqual(handler_2.name, 'b')
         self.assertEqual(handler_2.functor, create_complete_node_options)
         self.assertEqual(handler_2.number_inputs, 2)
         self.assertTrue(handler_2.has_output())
@@ -166,49 +175,53 @@ class TestNodeHandler(unittest.TestCase):
         handler: NodeHandler = NodeHandler.from_configuration(
             functor=CompleteNode().process,
             stream_handler=stream_handler,
-            configuration=Node(node="a", output_stream="1")
+            configuration=Node(node='a', output_stream='1'),
         )
         context = handler.process()
-        self.assertEqual(context["1"].get(), 4)
+        self.assertEqual(context['1'].get(), 4)
 
     def test_process_with_options(self):
         stream_handler = StreamHandler(graph=networkx.DiGraph())
-        stream_handler.add_output_stream(
-            OutputStream(key="1"), origin="source")
+        stream_handler.add_output_stream(OutputStream(key='1'), origin='source')
         handler: NodeHandler = NodeHandler.from_configuration(
             functor=CompleteNodeOptions().load(y=2, z=3).process,
-            stream_handler=stream_handler, configuration=Node(
-                node="b", input_streams=[InputStream(arg="x", stream="1")],
-                output_stream="2")
+            stream_handler=stream_handler,
+            configuration=Node(
+                node='b',
+                input_streams=[InputStream(arg='x', stream='1')],
+                output_stream='2',
+            ),
         )
         context: dict[str, ContextStream] = {}
-        context["1"] = ContextStream(key="1", type=int)
-        context["1"].register(new_value=1)
+        context['1'] = ContextStream(key='1', type=int)
+        context['1'].register(new_value=1)
         context = handler.process(context)
-        self.assertEqual(context["2"].get(), 8)
+        self.assertEqual(context['2'].get(), 8)
 
     def test_process_async_without_options(self):
         stream_handler = StreamHandler(graph=networkx.DiGraph())
         handler: NodeHandler = NodeHandler.from_configuration(
             functor=CompleteNode().process,
             stream_handler=stream_handler,
-            configuration=Node(node="a", output_stream="1")
+            configuration=Node(node='a', output_stream='1'),
         )
         context = asyncio.run(handler.process_async())
-        self.assertEqual(context["1"].get(), 4)
+        self.assertEqual(context['1'].get(), 4)
 
     def test_process_async_with_options(self):
         stream_handler = StreamHandler(graph=networkx.DiGraph())
-        stream_handler.add_output_stream(
-            OutputStream(key="1"), origin="source")
+        stream_handler.add_output_stream(OutputStream(key='1'), origin='source')
         handler: NodeHandler = NodeHandler.from_configuration(
             functor=CompleteNodeOptions().load(y=2, z=3).process,
-            stream_handler=stream_handler, configuration=Node(
-                node="b", input_streams=[InputStream(arg="x", stream="1")],
-                output_stream="2")
+            stream_handler=stream_handler,
+            configuration=Node(
+                node='b',
+                input_streams=[InputStream(arg='x', stream='1')],
+                output_stream='2',
+            ),
         )
         context: dict[str, ContextStream] = {}
-        context["1"] = ContextStream(key="1", type=int)
-        context["1"].register(new_value=1)
+        context['1'] = ContextStream(key='1', type=int)
+        context['1'].register(new_value=1)
         context = asyncio.run(handler.process_async(context))
-        self.assertEqual(context["2"].get(), 8)
+        self.assertEqual(context['2'].get(), 8)

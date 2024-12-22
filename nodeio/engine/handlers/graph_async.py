@@ -26,8 +26,7 @@ from nodeio.infrastructure.logger import NodeIOLogger
 @custom_validate_call(enabled=PRIVATE_VALIDATE_CALL_ENABLED)
 @log(enabled=LOGGING_ENABLED)
 async def __obtain_process_context_python_311(
-    graph: dict[int, list[NodeHandler]],
-    context: dict[KeyStr, ContextStream]
+    graph: dict[int, list[NodeHandler]], context: dict[KeyStr, ContextStream]
 ) -> dict[KeyStr, ContextStream]:
     """Obtain process context for Python >= 3.11.
 
@@ -41,15 +40,13 @@ async def __obtain_process_context_python_311(
     """
     for level, node_handlers in graph.items():
         NodeIOLogger().logger.info(
-            "Processing %d main nodes in level %d...",
-            len(node_handlers), level
+            'Processing %d main nodes in level %d...',
+            len(node_handlers),
+            level,
         )
         async with asyncio.TaskGroup() as task_group:
             for node_handler in node_handlers:
-                NodeIOLogger().logger.info(
-                    "--> Processing node handler %s...",
-                    node_handler.name
-                )
+                NodeIOLogger().logger.info('--> Processing node handler %s...', node_handler.name)
                 task: asyncio.Task = task_group.create_task(
                     node_handler.process_async(context=context)
                 )
@@ -70,8 +67,7 @@ async def __obtain_process_context_python_311(
 @custom_validate_call(enabled=PRIVATE_VALIDATE_CALL_ENABLED)
 @log(enabled=LOGGING_ENABLED)
 async def __obtain_process_context_python_39(
-    graph: dict[int, list[NodeHandler]],
-    context: dict[KeyStr, ContextStream]
+    graph: dict[int, list[NodeHandler]], context: dict[KeyStr, ContextStream]
 ) -> dict[KeyStr, ContextStream]:
     """Obtain process context for Python < 3.11.
 
@@ -87,18 +83,14 @@ async def __obtain_process_context_python_39(
     """
     for level, node_handlers in graph.items():
         NodeIOLogger().logger.info(
-            "Processing %d main nodes in level %d...",
-            len(node_handlers), level
+            'Processing %d main nodes in level %d...',
+            len(node_handlers),
+            level,
         )
         async_tasks = []
         for node_handler in node_handlers:
-            NodeIOLogger().logger.info(
-                "--> Processing node handler %s...",
-                node_handler.name
-            )
-            task: asyncio.Task = asyncio.create_task(
-                node_handler.process_async(context=context)
-            )
+            NodeIOLogger().logger.info('--> Processing node handler %s...', node_handler.name)
+            task: asyncio.Task = asyncio.create_task(node_handler.process_async(context=context))
 
             def task_done_callback(task: asyncio.Task):
                 """Verifies if the asynchronous task has finished
@@ -114,8 +106,9 @@ async def __obtain_process_context_python_39(
 
                 error = task.exception()
                 if error is not None:
-                    error_message = "Error processing node handler " \
-                        f"{node_handler.name} in graph: {error}"
+                    error_message = (
+                        'Error processing node handler ' f'{node_handler.name} in graph: {error}'
+                    )
                     NodeIOLogger().logger.error(error_message)
                     raise RuntimeError(error_message) from error
                 context.update(task.result())
@@ -130,7 +123,7 @@ async def __obtain_process_context_python_39(
 @log(enabled=LOGGING_ENABLED)
 async def process_graph_async(
     graph: dict[int, list[NodeHandler]],
-    context: Optional[dict[KeyStr, ContextStream]] = None
+    context: Optional[dict[KeyStr, ContextStream]] = None,
 ) -> dict[KeyStr, ContextStream]:
     """Process graphs assynchronously.
 
@@ -146,9 +139,7 @@ async def process_graph_async(
         context = {}
 
     if sys.version_info.major >= 3 and sys.version_info.minor >= 11:
-        context = await __obtain_process_context_python_311(
-            graph=graph, context=context)
+        context = await __obtain_process_context_python_311(graph=graph, context=context)
     else:  # < 3.11:
-        context = await __obtain_process_context_python_39(
-            graph=graph, context=context)
+        context = await __obtain_process_context_python_39(graph=graph, context=context)
     return context

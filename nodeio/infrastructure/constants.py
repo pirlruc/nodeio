@@ -13,12 +13,11 @@ import logging
 import os
 
 DEFAULT_LOGGING_FORMATTER = logging.Formatter(
-    "[%(asctime)s]:[%(levelname)s]:[%(name)s]:%(pathname)s:%(lineno)d: "
-    "%(message)s"
+    '[%(asctime)s]:[%(levelname)s]:[%(name)s]:%(pathname)s:%(lineno)d: ' '%(message)s'
 )
 DEFAULT_LOGGING_LEVEL = logging.DEBUG
 
-LOGGING_ENABLED = os.environ.get("NODEIO_LIB_LOGGING", False)
+LOGGING_ENABLED = os.environ.get('NODEIO_LIB_LOGGING', False)
 if ~isinstance(LOGGING_ENABLED, bool):
     LOGGING_ENABLED = False
 

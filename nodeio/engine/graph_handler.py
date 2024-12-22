@@ -41,25 +41,21 @@ from nodeio.infrastructure.logger import NodeIOLogger
 
 class _NodeType(str, Enum):
     """External node types. These nodes are used to identify the types of
-     external nodes that can exist. These nodes are not processing nodes."""
-    EXTERNAL_SOURCE_NODE = "external_source_node"
-    EXTERNAL_SINK_NODE = "external_sink_node"
+    external nodes that can exist. These nodes are not processing nodes."""
+
+    EXTERNAL_SOURCE_NODE = 'external_source_node'
+    EXTERNAL_SINK_NODE = 'external_sink_node'
 
 
 class GraphHandler(BaseModel, validate_assignment=True):
     """Manages and handles a processing graph."""
+
     __graph: DiGraph = PrivateAttr(default=DiGraph())
     __input_streams: list[OutputStream] = PrivateAttr(default=[])
     __output_streams: list[OutputStream] = PrivateAttr(default=[])
-    __main_processing_graph: dict[int, list[NodeHandler]] = PrivateAttr(
-        default={}
-    )
-    __secondary_processing_graph: dict[int, list[NodeHandler]] = PrivateAttr(
-        default={}
-    )
-    __secondary_context: dict[KeyStr, ContextStream] = PrivateAttr(
-        default={}
-    )
+    __main_processing_graph: dict[int, list[NodeHandler]] = PrivateAttr(default={})
+    __secondary_processing_graph: dict[int, list[NodeHandler]] = PrivateAttr(default={})
+    __secondary_context: dict[KeyStr, ContextStream] = PrivateAttr(default={})
 
     @property
     def number_nodes(self) -> int:
@@ -77,13 +73,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
         :return: Number of nodes in main processing graph
         :rtype: int
         """
-        return len(
-            [
-                node
-                for _, nodes in self.__main_processing_graph.items()
-                for node in nodes
-            ]
-        )
+        return len([node for _, nodes in self.__main_processing_graph.items() for node in nodes])
 
     @property
     def number_secondary_processing_graph_nodes(self) -> int:
@@ -93,11 +83,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
         :rtype: int
         """
         return len(
-            [
-                node
-                for _, nodes in self.__secondary_processing_graph.items()
-                for node in nodes
-            ]
+            [node for _, nodes in self.__secondary_processing_graph.items() for node in nodes]
         )
 
     @property
@@ -133,49 +119,42 @@ class GraphHandler(BaseModel, validate_assignment=True):
         """
         self.__create_graph(factory=factory, configuration=configuration)
 
-        node_handlers = get_node_attributes(self.__graph, name="handler")
+        node_handlers = get_node_attributes(self.__graph, name='handler')
         self.__main_processing_graph = self.__create_main_processing_graph(
             node_handlers=node_handlers
         )
-        self.__secondary_processing_graph = \
-            self.__create_secondary_processing_graph(
-                node_handlers=node_handlers
-            )
+        self.__secondary_processing_graph = self.__create_secondary_processing_graph(
+            node_handlers=node_handlers
+        )
         return self
 
     # TODO: Merge open and open_async methods
     @log(enabled=LOGGING_ENABLED)
     def open(self):
         """Execute nodes independent from the main processing graph
-         synchronously. The context will be stored and used by the main
-         processing graph.
+        synchronously. The context will be stored and used by the main
+        processing graph.
         """
-        NodeIOLogger().logger.info("Processing independent nodes (open "
-                                   "method graph)...")
-        self.__secondary_context = \
-            nodeio.engine.handlers.graph_sync.process_graph(
-                graph=self.__secondary_processing_graph
-            )
+        NodeIOLogger().logger.info('Processing independent nodes (open ' 'method graph)...')
+        self.__secondary_context = nodeio.engine.handlers.graph_sync.process_graph(
+            graph=self.__secondary_processing_graph
+        )
 
     @log(enabled=LOGGING_ENABLED)
     async def open_async(self):
         """Execute nodes independent from the main processing graph
-         assynchronously. The context will be stored and used by the main
-         processing graph.
+        assynchronously. The context will be stored and used by the main
+        processing graph.
         """
-        NodeIOLogger().logger.info("Processing independent nodes (open "
-                                   "method graph)...")
-        self.__secondary_context = \
-            await nodeio.engine.handlers.graph_async.process_graph_async(
-                graph=self.__secondary_processing_graph
-            )
+        NodeIOLogger().logger.info('Processing independent nodes (open ' 'method graph)...')
+        self.__secondary_context = await nodeio.engine.handlers.graph_async.process_graph_async(
+            graph=self.__secondary_processing_graph
+        )
 
     # TODO: Merge process and process_async methods
     @validate_call
     @log(enabled=LOGGING_ENABLED)
-    def process(
-        self, context: Optional[dict[KeyStr, ContextStream]] = None
-    ) -> dict[KeyStr, Any]:
+    def process(self, context: Optional[dict[KeyStr, ContextStream]] = None) -> dict[KeyStr, Any]:
         """Executed nodes from the main processing graph.
         The context returned correspond only to the main output streams
         registered in the main processing graph.
@@ -195,11 +174,9 @@ class GraphHandler(BaseModel, validate_assignment=True):
         )
         process_context = context
         process_context.update(self.__secondary_context)
-        NodeIOLogger().logger.info("Processing nodes from main processing "
-                                   "graph...")
+        NodeIOLogger().logger.info('Processing nodes from main processing ' 'graph...')
         process_context = nodeio.engine.handlers.graph_sync.process_graph(
-            context=process_context,
-            graph=self.__main_processing_graph
+            context=process_context, graph=self.__main_processing_graph
         )
         nodeio.engine.handlers.graph_utils.validate_streams_in_context(
             streams=self.__output_streams, context=process_context
@@ -230,13 +207,10 @@ class GraphHandler(BaseModel, validate_assignment=True):
         )
         process_context = context
         process_context.update(self.__secondary_context)
-        NodeIOLogger().logger.info("Processing nodes from main processing "
-                                   "graph...")
-        process_context = \
-            await nodeio.engine.handlers.graph_async.process_graph_async(
-                context=process_context,
-                graph=self.__main_processing_graph
-            )
+        NodeIOLogger().logger.info('Processing nodes from main processing ' 'graph...')
+        process_context = await nodeio.engine.handlers.graph_async.process_graph_async(
+            context=process_context, graph=self.__main_processing_graph
+        )
         nodeio.engine.handlers.graph_utils.validate_streams_in_context(
             streams=self.__output_streams, context=process_context
         )
@@ -255,18 +229,18 @@ class GraphHandler(BaseModel, validate_assignment=True):
         """
         if options is None:
             options = {
-                "font_size": 14,
-                "node_size": 600,
-                "node_color": "white",
-                "edgecolors": "black",
-                "linewidths": 2,
-                "width": 2,
+                'font_size': 14,
+                'node_size': 600,
+                'node_color': 'white',
+                'edgecolors': 'black',
+                'linewidths': 2,
+                'width': 2,
             }
 
         draw_networkx(self.__graph, **options)
         ax = matplotlib.pyplot.gca()
         ax.margins(0.20)
-        matplotlib.pyplot.axis("off")
+        matplotlib.pyplot.axis('off')
         matplotlib.pyplot.savefig(filename)
 
     @custom_validate_call(enabled=PRIVATE_VALIDATE_CALL_ENABLED)
@@ -295,12 +269,11 @@ class GraphHandler(BaseModel, validate_assignment=True):
             node_key=_NodeType.EXTERNAL_SINK_NODE.name.lower(),
         )
 
-        self.__input_streams = \
-            nodeio.engine.handlers.graph_utils.register_input_streams(
-                origin=_NodeType.EXTERNAL_SOURCE_NODE.name.lower(),
-                stream_handler=stream_handler,
-                configuration=configuration.input_streams,
-            )
+        self.__input_streams = nodeio.engine.handlers.graph_utils.register_input_streams(
+            origin=_NodeType.EXTERNAL_SOURCE_NODE.name.lower(),
+            stream_handler=stream_handler,
+            configuration=configuration.input_streams,
+        )
         node_keys = nodeio.engine.handlers.graph_utils.register_node_handlers(
             graph=self.__graph,
             node_keys=node_keys,
@@ -308,15 +281,13 @@ class GraphHandler(BaseModel, validate_assignment=True):
             stream_handler=stream_handler,
             configuration=configuration.nodes,
         )
-        self.__output_streams = \
-            nodeio.engine.handlers.graph_utils.register_output_streams(
-                ending=_NodeType.EXTERNAL_SINK_NODE.name.lower(),
-                stream_handler=stream_handler,
-                configuration=configuration.output_streams,
-            )
+        self.__output_streams = nodeio.engine.handlers.graph_utils.register_output_streams(
+            ending=_NodeType.EXTERNAL_SINK_NODE.name.lower(),
+            stream_handler=stream_handler,
+            configuration=configuration.output_streams,
+        )
         nodeio.engine.handlers.graph_utils.validate_nodes_and_streams(
-            graph=self.__graph,
-            stream_handler=stream_handler
+            graph=self.__graph, stream_handler=stream_handler
         )
 
     @custom_validate_call(enabled=PRIVATE_VALIDATE_CALL_ENABLED)
@@ -338,7 +309,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
         return nodeio.engine.handlers.graph_utils.create_processing_graph(
             graph=self.__graph,
             source_nodes=source_nodes,
-            node_handlers=node_handlers
+            node_handlers=node_handlers,
         )
 
     @custom_validate_call(enabled=PRIVATE_VALIDATE_CALL_ENABLED)
@@ -357,22 +328,17 @@ class GraphHandler(BaseModel, validate_assignment=True):
         :rtype: dict[int, list[NodeHandler]]
         """
         processing_graph = {}
-        secondary_nodes: set = (
-            self.__get_nodes_in_secondary_processing_graph()
-        )
+        secondary_nodes: set = self.__get_nodes_in_secondary_processing_graph()
         if len(secondary_nodes) != 0:
-            source_nodes: set = \
-                nodeio.engine.handlers.graph_utils.get_source_nodes(
-                    graph=self.__graph,
-                    nodes=secondary_nodes
-                )
+            source_nodes: set = nodeio.engine.handlers.graph_utils.get_source_nodes(
+                graph=self.__graph, nodes=secondary_nodes
+            )
             source_nodes.add(_NodeType.EXTERNAL_SOURCE_NODE.name.lower())
-            layers: dict = \
-                nodeio.engine.handlers.graph_utils.create_processing_graph(
-                    graph=self.__graph,
-                    source_nodes=source_nodes,
-                    node_handlers=node_handlers
-                )
+            layers: dict = nodeio.engine.handlers.graph_utils.create_processing_graph(
+                graph=self.__graph,
+                source_nodes=source_nodes,
+                node_handlers=node_handlers,
+            )
             level = 0
             for _, handlers in layers.items():
                 increase_level = False
@@ -396,9 +362,7 @@ class GraphHandler(BaseModel, validate_assignment=True):
 
     @custom_validate_call(enabled=PRIVATE_VALIDATE_CALL_ENABLED)
     @log(enabled=LOGGING_ENABLED)
-    def __filter_output(
-        self, context: dict[KeyStr, ContextStream]
-    ) -> dict[KeyStr, Any]:
+    def __filter_output(self, context: dict[KeyStr, ContextStream]) -> dict[KeyStr, Any]:
         """Filter output from graph processing context.
 
         :param context: Graph processing context
@@ -437,13 +401,12 @@ class GraphHandler(BaseModel, validate_assignment=True):
         main processing graph, the open() method should be executed before
         calling this method.
         """
-        if (
-            self.number_secondary_processing_graph_nodes != 0
-            and len(self.__secondary_context) == 0
-        ):
+        if self.number_secondary_processing_graph_nodes != 0 and len(self.__secondary_context) == 0:
             # TODO: Execute open method and send warning
-            error_message = "The nodes independent from the main processing " \
-                "graph must be executed before the main processing graph. " \
-                "Please perform open() method."
+            error_message = (
+                'The nodes independent from the main processing '
+                'graph must be executed before the main processing graph. '
+                'Please perform open() method.'
+            )
             NodeIOLogger().logger.error(error_message)
             raise RuntimeError(error_message)

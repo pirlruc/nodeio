@@ -58,8 +58,9 @@ def add_node(
     :rtype: set[KeyStr]
     """
     if node_key in node_keys:
-        error_message = f"Node with identifier {node_key} already " \
-            "exists. Please review configuration"
+        error_message = (
+            f'Node with identifier {node_key} already ' 'exists. Please review configuration'
+        )
         NodeIOLogger().logger.error(error_message)
         raise ConfigurationError(error_message)
     graph.add_node(node_for_adding=node_key, handler=handler)
@@ -128,19 +129,17 @@ def register_node_handlers(
         input_context = {}
         for key, value in node_config.options.items():
             input_context[key] = value
-        node: BaseNode = factory.create(
-            key=node_config.type, **input_context
-        )
+        node: BaseNode = factory.create(key=node_config.type, **input_context)
         handler: NodeHandler = NodeHandler.from_configuration(
             functor=node.process,
             stream_handler=stream_handler,
-            configuration=node_config
+            configuration=node_config,
         )
         node_keys = add_node(
             graph=graph,
             node_keys=node_keys,
             node_key=handler.name,
-            handler=handler
+            handler=handler,
         )
     return node_keys
 
@@ -172,21 +171,18 @@ def register_output_streams(
     output_streams = []
     for output_stream_key in configuration:
         try:
-            output_stream = stream_handler.get_output_stream(
-                key=output_stream_key
-            )
+            output_stream = stream_handler.get_output_stream(key=output_stream_key)
         except KeyError as error:
-            error_message = f"Main output stream {output_stream_key} " \
-                "does not have a registered connection with a node. " \
-                "Please review configuration"
+            error_message = (
+                f'Main output stream {output_stream_key} '
+                'does not have a registered connection with a node. '
+                'Please review configuration'
+            )
             NodeIOLogger().logger.error(error_message)
             raise ConfigurationError(error_message) from error
 
         output_streams.append(output_stream)
-        stream_handler.register_connection(
-            key=output_stream_key,
-            ending=ending
-        )
+        stream_handler.register_connection(key=output_stream_key, ending=ending)
     return output_streams
 
 
@@ -205,31 +201,33 @@ def validate_nodes_and_streams(graph: DiGraph, stream_handler: StreamHandler):
     has streams without connections.
     """
     isolated_nodes = list(isolates(graph))
-    error_message = ""
+    error_message = ''
     if len(isolated_nodes) != 0:
-        isolated_nodes_str = ""
+        isolated_nodes_str = ''
         for node_key in isolated_nodes:
-            if isolated_nodes_str == "":
-                isolated_nodes_str += f"{node_key}"
+            if isolated_nodes_str == '':
+                isolated_nodes_str += f'{node_key}'
             else:
-                isolated_nodes_str += f", {node_key}"
-        error_message = f"There are {len(isolated_nodes)} isolated " \
-            f"nodes: {isolated_nodes_str}. "
+                isolated_nodes_str += f', {node_key}'
+        error_message = (
+            f'There are {len(isolated_nodes)} isolated ' f'nodes: {isolated_nodes_str}. '
+        )
 
     if stream_handler.has_unconnected_streams():
         unconnected_streams = stream_handler.get_unconnected_stream_keys()
-        unconnected_streams_str = ""
+        unconnected_streams_str = ''
         for stream_key in unconnected_streams:
-            if unconnected_streams_str == "":
-                unconnected_streams_str += f"{stream_key}"
+            if unconnected_streams_str == '':
+                unconnected_streams_str += f'{stream_key}'
             else:
-                unconnected_streams_str += f", {stream_key}"
-        error_message += f"There are {len(unconnected_streams)} " \
-            f"unconnected streams: {unconnected_streams_str}. "
+                unconnected_streams_str += f', {stream_key}'
+        error_message += (
+            f'There are {len(unconnected_streams)} '
+            f'unconnected streams: {unconnected_streams_str}. '
+        )
 
-    if (len(isolated_nodes) != 0
-            or stream_handler.has_unconnected_streams()):
-        error_message += "Please review configuration"
+    if len(isolated_nodes) != 0 or stream_handler.has_unconnected_streams():
+        error_message += 'Please review configuration'
         NodeIOLogger().logger.error(error_message)
         raise ConfigurationError(error_message)
 
@@ -292,11 +290,7 @@ def get_source_nodes(graph: DiGraph, nodes: set[KeyStr]) -> set[KeyStr]:
     :return: Source nodes.
     :rtype: set[KeyStr]
     """
-    return {
-        node_key
-        for node_key in nodes
-        if len(graph.in_edges(node_key)) == 0
-    }
+    return {node_key for node_key in nodes if len(graph.in_edges(node_key)) == 0}
 
 
 @validate_call
@@ -317,11 +311,7 @@ def validate_streams_in_context(
     in context
     """
     for stream in streams:
-        if (
-            stream.key not in context
-            or not context[stream.key].has_value()
-        ):
-            error_message = "Context does not have the stream " \
-                f"{stream.key} value loaded."
+        if stream.key not in context or not context[stream.key].has_value():
+            error_message = 'Context does not have the stream ' f'{stream.key} value loaded.'
             NodeIOLogger().logger.error(error_message)
             raise KeyError(error_message)
