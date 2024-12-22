@@ -385,16 +385,21 @@ class TestGraphHandler(unittest.TestCase):
 
     # def test_process_without_output_streams_in_context(self):
     #     # Not possible to obtain since this is ensured by validation on the creation of the graph.
-    #     # To test comment the block of code in graph_handler corresponding to the processing of the main processing graph.
+    #     # To test comment the block of code in graph_handler corresponding to the processing of
+    #     # the main processing graph.
     #     factory = NodeFactory()
     #     factory.register("node", create_complete_node_options)
     #     config = Graph(
     #         input_streams=["0"],
     #         output_streams=["1"],
-    #         nodes=[
-    #             Node(node="a",input_streams=[InputStream(arg="x",stream="0")],output_stream="a",options={"y": 2, "z": 3}),
-    #             Node(node="g",input_streams=[InputStream(arg="x",stream="a")],output_stream="1",options={"y": 2, "z": 3}),
-    #             ])
+    # nodes=[
+    #     Node(node="a",
+    #          input_streams=[InputStream(arg="x",stream="0")],
+    #          output_stream="a",options={"y": 2, "z": 3}),
+    #     Node(node="g",
+    #          input_streams=[InputStream(arg="x",stream="a")],
+    #          output_stream="1",options={"y": 2, "z": 3}),
+    #     ])
     #     handler = GraphHandler()
     #     handler.load(factory=factory, configuration=config)
     #     handler.open()

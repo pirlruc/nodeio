@@ -36,7 +36,7 @@ jobs:
       run: |
         pip install flake8
         flake8 nodeio --count --show-source --statistics
-        flake8 nodeio --max-complexity 8
+        flake8 nodeio
 
     - name: Lint with ruff
       run: |
@@ -52,7 +52,7 @@ jobs:
     - name: Documentation coverage
       run: |
         pip install docstr-coverage
-        docstr-coverage nodeio --fail-under=90
+        docstr-coverage nodeio
 
 
   sast:

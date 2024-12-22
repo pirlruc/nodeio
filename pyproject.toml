@@ -40,8 +40,7 @@ line-length = 100
 indent-width = 4
 
 exclude = [
-    "nodeio/__init__.py",
-    "tests"
+    "nodeio/__init__.py"
 ]
 
 [tool.ruff.lint]
