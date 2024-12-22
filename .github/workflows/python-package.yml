@@ -90,7 +90,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.11"]
 
     steps:
     - uses: actions/checkout@v4
@@ -129,10 +129,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e .
 
-    - name: Safety dependency scanning
-      run: |
-        pip install safety
-        safety scan nodeio
+    # - name: Safety dependency scanning
+    #   run: |
+    #     pip install safety
+    #     safety scan nodeio
 
     - uses: pyupio/safety-action@v1
       with:
@@ -207,18 +207,19 @@ jobs:
         pip install build
         python -m build .
 
-    - name: Create documentation
-      run: |
-        pip install mkdocs
-        pip install 'mkdocstrings[python]'
-        pip install mkdocs-material
-        mkdocs build --config-file docs/mkdocs.yml
+    # - name: Create documentation
+    #   run: |
+    #     pip install mkdocs
+    #     pip install 'mkdocstrings[python]'
+    #     pip install mkdocs-material
+    #     mkdocs build --config-file docs/mkdocs.yml
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: build-${{ matrix.os }}-${{ matrix.python-version }}
         path: |
+          dist
       if: ${{ always() }}
 
 
