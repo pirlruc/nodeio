@@ -248,11 +248,11 @@ jobs:
 
     - name: Analyze SBOM
       run: |
-        sudo npm install -g @cyclonedx/cdxgen
+        npm install -g @cyclonedx/cdxgen
         pip install owasp-depscan
-        depscan --src nodeio --reports-dir report_depscan --explain --no-banner
-        depscan --src nodeio --reports-dir report_environment --explain --no-banner --bom env-nodeio-sbom-${{ matrix.os }}-${{ matrix.python-version }}.json
-        depscan --src nodeio --reports-dir report_nodeio --explain --no-banner --bom nodeio-sbom-${{ matrix.os }}-${{ matrix.python-version }}.json
+        depscan --src nodeio --reports-dir report_depscan_${{ matrix.os }}_${{ matrix.python-version }} --explain --no-banner
+        depscan --src nodeio --reports-dir report_environment_${{ matrix.os }}_${{ matrix.python-version }} --explain --no-banner --bom env-nodeio-sbom-${{ matrix.os }}-${{ matrix.python-version }}.json
+        depscan --src nodeio --reports-dir report_nodeio_${{ matrix.os }}_${{ matrix.python-version }} --explain --no-banner --bom nodeio-sbom-${{ matrix.os }}-${{ matrix.python-version }}.json
 
     # - name: Upload BOM to Dependency-Track
     #   uses: DependencyTrack/gh-upload-sbom@v3.1.0
@@ -262,6 +262,9 @@ jobs:
       with:
         name: sbom-${{ matrix.os }}-${{ matrix.python-version }}
         path: |
+          report_depscan_${{ matrix.os }}_${{ matrix.python-version }}
+          report_environment_${{ matrix.os }}_${{ matrix.python-version }}
+          report_nodeio_${{ matrix.os }}_${{ matrix.python-version }}
           env-nodeio-sbom-${{ matrix.os }}-${{ matrix.python-version }}.json
           nodeio-sbom-${{ matrix.os }}-${{ matrix.python-version }}.json
       if: ${{ always() }}
