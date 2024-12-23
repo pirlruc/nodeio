@@ -1,3 +1,9 @@
+"""The base node module define the BaseNode abstract class to define all nodes.
+
+Classes:
+    BaseNode - abstract class to define all nodes.
+"""
+
 from abc import ABC, abstractmethod
 from typing import Any, Optional
 
@@ -5,6 +11,7 @@ from pydantic import validate_call
 from typing_extensions import Self
 
 from nodeio.decorators.logging import log
+from nodeio.infrastructure.constants import LOGGING_ENABLED
 from nodeio.infrastructure.constrained_types import KeyStr
 
 
@@ -24,6 +31,7 @@ class BaseNode(ABC):
 
     @name.setter
     @validate_call
+    @log(enabled=LOGGING_ENABLED)
     def name(self, new_name: KeyStr):
         """Updates the node name identifier.
 
@@ -33,7 +41,7 @@ class BaseNode(ABC):
         self.__name = new_name
 
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def __init__(self, name: Optional[KeyStr] = None):
         """Creates a node instance."""
         self.__name = self.__class__.__name__.lower()

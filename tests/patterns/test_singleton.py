@@ -24,7 +24,7 @@ class TestThread:
 
 def print_value_thread(value: str, result: dict) -> None:
     singleton = TestThread(value)
-    result[value] = {"value": singleton.value, "id": id(singleton)}
+    result[value] = {'value': singleton.value, 'id': id(singleton)}
 
 
 class TestSingleton(unittest.TestCase):
@@ -35,10 +35,10 @@ class TestSingleton(unittest.TestCase):
 
     def test_singleton_thread(self):
         results = {}
-        process1 = Thread(target=print_value_thread, args=("FOO", results))
-        process2 = Thread(target=print_value_thread, args=("BAR", results))
+        process1 = Thread(target=print_value_thread, args=('FOO', results))
+        process2 = Thread(target=print_value_thread, args=('BAR', results))
         process1.start()
         process2.start()
         process1.join()
         process2.join()
-        self.assertEqual(results["FOO"], results["BAR"])
+        self.assertEqual(results['FOO'], results['BAR'])

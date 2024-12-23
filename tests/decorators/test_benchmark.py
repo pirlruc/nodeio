@@ -65,12 +65,14 @@ class TestBenchmarkDecorators(unittest.TestCase):
 
     def test_benchmark_repeat_float(self):
         with self.assertRaises(pydantic_core._pydantic_core.ValidationError):
+
             @nodeio.decorators.benchmark.benchmark(number_repeats=1.4)
             def invalid_repeat(values: list):
                 pass
 
     def test_benchmark_repeat_zero(self):
         with self.assertRaises(pydantic_core._pydantic_core.ValidationError):
+
             @nodeio.decorators.benchmark.benchmark(number_repeats=0)
             def invalid_repeat(values: list):
                 pass

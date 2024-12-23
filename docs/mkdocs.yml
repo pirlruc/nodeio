@@ -1,0 +1,29 @@
+site_name: nodeio
+
+theme:
+  name: material
+  language: en # language of the site
+  features:
+    - navigation.tabs # To have tabs instead of links
+    - navigation.tabs.sticky # So have the tabs always present at the top of the page, event when you scroll down
+    - navigation.tracking # the url evolves with the scrolling
+    #- toc.integrate # to have a toc on the left
+    - navigation.top # to have a shorcut to go back on top of the page when we scroll down
+
+plugins:
+  - search
+  - offline
+  - mkdocstrings:
+      #enabled: !ENV [ENABLE_MKDOCSTRINGS, true]
+      #custom_templates: templates
+      default_handler: python
+      handlers:
+        python:
+          options:
+            docstring_style: sphinx
+            show_source: false
+            show_inheritance_diagram: true
+            inherited_members: true
+
+nav:
+  - Home: index.md

@@ -1,3 +1,12 @@
+"""The action module contains the list of actions that can be performed to the
+ values registered in the output streams.
+
+Classes:
+    Action - abstract class for all actions.
+    ListAction - select an index from a list.
+    DictAction - select a key from a dictionary.
+"""
+
 from abc import ABC
 from typing import Union
 
@@ -6,6 +15,7 @@ from typing_extensions import Self
 
 import nodeio.engine.configuration
 from nodeio.decorators.logging import log
+from nodeio.infrastructure.constants import LOGGING_ENABLED
 from nodeio.infrastructure.constrained_types import KeyStr
 from nodeio.infrastructure.logger import NodeIOLogger
 
@@ -27,7 +37,7 @@ class Action(BaseModel, ABC, validate_assignment=True):
 
     @staticmethod
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def from_configuration(
         configuration: Union[
             nodeio.engine.configuration.ListAction,
@@ -51,9 +61,7 @@ class Action(BaseModel, ABC, validate_assignment=True):
             return ListAction.from_configuration(configuration=configuration)
         if isinstance(configuration, nodeio.engine.configuration.DictAction):
             return DictAction.from_configuration(configuration=configuration)
-        error_message = (
-            f"Action type {type(configuration)} not implemented"
-        )
+        error_message = f'Action type {type(configuration)} not implemented'
         NodeIOLogger().logger.error(error_message)
         raise NotImplementedError(error_message)
 
@@ -66,7 +74,7 @@ class ListAction(Action):
 
     @staticmethod
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def from_configuration(
         configuration: nodeio.engine.configuration.ListAction,
     ) -> Self:
@@ -89,7 +97,7 @@ class DictAction(Action):
 
     @staticmethod
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def from_configuration(
         configuration: nodeio.engine.configuration.DictAction,
     ) -> Self:

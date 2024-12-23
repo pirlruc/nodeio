@@ -1,3 +1,10 @@
+"""The logger module implements a singleton logger for logging purposes within
+ the graph processing engine.
+
+Classes:
+    NodeIOLogger - graph processing engine logger.
+"""
+
 import logging
 
 from pydantic import BaseModel, PrivateAttr
@@ -30,9 +37,7 @@ class NodeIOLogger(BaseModel, validate_assignment=True):
 
     def add_default_handler(self) -> Self:
         """Associates a default handler with the logger singleton object."""
-        file_handler = logging.FileHandler(
-            self.__class__.__name__ + ".log", mode="w"
-        )
+        file_handler = logging.FileHandler(self.__class__.__name__ + '.log', mode='w')
         file_handler.setFormatter(DEFAULT_LOGGING_FORMATTER)
         self.__logger.addHandler(file_handler)
         self.__logger.setLevel(DEFAULT_LOGGING_LEVEL)

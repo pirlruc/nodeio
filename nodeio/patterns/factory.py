@@ -1,3 +1,11 @@
+"""The factory module implements the factory design pattern for creating
+ random objects.
+
+Classes:
+    Factory - implementation of the factory design pattern to create
+     random objects.
+"""
+
 from collections.abc import Callable
 from typing import Any
 
@@ -5,6 +13,7 @@ from pydantic import BaseModel, PrivateAttr, validate_call
 from typing_extensions import Self
 
 from nodeio.decorators.logging import log
+from nodeio.infrastructure.constants import LOGGING_ENABLED
 from nodeio.infrastructure.constrained_types import KeyStr
 from nodeio.infrastructure.logger import NodeIOLogger
 
@@ -24,7 +33,7 @@ class Factory(BaseModel, validate_assignment=True):
         return len(self.__callbacks)
 
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def register(self, key: KeyStr, functor: Callable) -> Self:
         """Registers a functor with a given key.
 
@@ -39,14 +48,14 @@ class Factory(BaseModel, validate_assignment=True):
         :raises KeyError: If the key is already defined in factory.
         """
         if key in self.__callbacks.keys():
-            error_message = "Functor key already defined in factory"
+            error_message = 'Functor key already defined in factory'
             NodeIOLogger().logger.error(error_message)
             raise KeyError(error_message)
         self.__callbacks[key] = functor
         return self
 
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def unregister(self, key: KeyStr) -> Self:
         """Unregisters the functor associated with a given key.
 
@@ -59,14 +68,14 @@ class Factory(BaseModel, validate_assignment=True):
         :raises KeyError: If the key is not present in factory.
         """
         if key not in self.__callbacks.keys():
-            error_message = "Functor key not present in factory"
+            error_message = 'Functor key not present in factory'
             NodeIOLogger().logger.error(error_message)
             raise KeyError(error_message)
         self.__callbacks.pop(key, None)
         return self
 
     @validate_call
-    @log
+    @log(enabled=LOGGING_ENABLED)
     def create(self, key: KeyStr, *args, **kwargs) -> Any:
         """Returns the result of the functor registered with the provided key.
 
@@ -78,7 +87,7 @@ class Factory(BaseModel, validate_assignment=True):
         :raises KeyError: If the key is not present in factory.
         """
         if key not in self.__callbacks.keys():
-            error_message = "Functor key not present in factory"
+            error_message = 'Functor key not present in factory'
             NodeIOLogger().logger.error(error_message)
             raise KeyError(error_message)
         return self.__callbacks[key](*args, **kwargs)
