@@ -27,7 +27,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
+    - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -e .
@@ -49,7 +49,7 @@ jobs:
         pip install pylint
         pylint --fail-under=8 -ry nodeio
 
-    - name: Documentation coverage
+    - name: Documentation Coverage
       run: |
         pip install docstr-coverage
         docstr-coverage nodeio
@@ -69,17 +69,17 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
+    - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -e .
 
-    - name: Bandit security analysis
+    - name: Bandit Security Analysis
       run: |
         pip install bandit[toml]
         bandit -c pyproject.toml -r nodeio
 
-    - name: Semgrep security analysis
+    - name: Semgrep Security Analysis
       run: |
         pip install semgrep
         semgrep scan --config auto nodeio
@@ -99,12 +99,12 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
+    - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -e .
 
-    - name: gitleaks secret detection
+    - name: Gitleaks Secret Detection
       uses: gitleaks/gitleaks-action@v2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -124,17 +124,13 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
+    - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -e .
 
-    # - name: Safety dependency scanning
-    #   run: |
-    #     pip install safety
-    #     safety scan nodeio
-
-    - uses: pyupio/safety-action@v1
+    - name: Safety Dependency Scanning
+      uses: pyupio/safety-action@v1
       with:
         api-key: ${{ secrets.SAFETY_API_KEY }}
 
@@ -154,7 +150,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
+    - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -e .
@@ -171,7 +167,7 @@ jobs:
         coverage json
         coverage-threshold --line-coverage-min=90 --branch-coverage-min=80
 
-    - name: Upload pytest test results
+    - name: Upload pytest Test Results
       uses: actions/upload-artifact@v4
       with:
         name: pytest-results-${{ matrix.os }}-${{ matrix.python-version }}
@@ -198,11 +194,11 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
+    - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
 
-    - name: Build package
+    - name: Build Package
       run: |
         pip install build
         python -m build .
@@ -214,7 +210,7 @@ jobs:
     #     pip install mkdocs-material
     #     mkdocs build --config-file docs/mkdocs.yml
 
-    - name: Upload artifacts
+    - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: build-${{ matrix.os }}-${{ matrix.python-version }}
@@ -239,7 +235,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install dependencies
+    - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         pip install .
@@ -247,14 +243,25 @@ jobs:
     - name: Create SBOM
       run: |
         pip install cyclonedx-py
-        cyclonedx-py environment --pyproject ./pyproject.toml --mc-type library --outfile env_nodeio_sbom-${{ matrix.os }}-${{ matrix.python-version }}.json
+        cyclonedx-py environment --pyproject ./pyproject.toml --mc-type library --outfile env-nodeio-sbom-${{ matrix.os }}-${{ matrix.python-version }}.json
         cyclonedx-py requirements ./requirements.txt --pyproject ./pyproject.toml --mc-type library --outfile nodeio-sbom-${{ matrix.os }}-${{ matrix.python-version }}.json
 
-    - name: Upload artifacts
+    - name: Analyze SBOM
+      run: |
+        sudo npm install -g @cyclonedx/cdxgen
+        pip install owasp-depscan
+        depscan --src nodeio --reports-dir report_depscan --explain --no-banner
+        depscan --src nodeio --reports-dir report_environment --explain --no-banner --bom env-nodeio-sbom-${{ matrix.os }}-${{ matrix.python-version }}.json
+        depscan --src nodeio --reports-dir report_nodeio --explain --no-banner --bom nodeio-sbom-${{ matrix.os }}-${{ matrix.python-version }}.json
+
+    # - name: Upload BOM to Dependency-Track
+    #   uses: DependencyTrack/gh-upload-sbom@v3.1.0
+
+    - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: sbom-${{ matrix.os }}-${{ matrix.python-version }}
         path: |
-          env_nodeio_sbom-${{ matrix.os }}-${{ matrix.python-version }}.json
+          env-nodeio-sbom-${{ matrix.os }}-${{ matrix.python-version }}.json
           nodeio-sbom-${{ matrix.os }}-${{ matrix.python-version }}.json
       if: ${{ always() }}
